@@ -1,6 +1,6 @@
 # Vapor & Trilhos: Dreadnoughts de Terra — Documento de Design
 
-> **Status:** rascunho v0.1 — arquitetura Java *proposta, aguardando aprovação*.
+> **Status:** v0.2 — arquitetura aprovada; Fase 1 (núcleo) implementada (ver B5).
 > Este documento é a fonte para a versão Java (Fabric) **e** para uma futura versão Bedrock.
 > Por isso ele é dividido em duas partes:
 >
@@ -396,7 +396,7 @@ vãos de 3 blocos.
 - `LandshipEntity extends VehicleEntity implements HasCustomInventoryScreen`
   (mesma base dos barcos/carrinhos na 26.3).
 - Dimensões 2,9 × 2,0; `canBeCollidedWith → true` (jogadores sobem no teto como num barco);
-  degrau via atributo de *step height* = 1,0.
+  degrau de 1 bloco via `maxUpStep()`.
 - 3 assentos: posições de passageiro calculadas a partir do yaw (como o barco).
 - **Movimento — padrão do barco:** quando o piloto é o jogador local, **o cliente do piloto
   simula o movimento** (`isLocalInstanceAuthoritative`) e o jogo já envia a posição do
@@ -529,6 +529,39 @@ client/ (source set separado)
 | Immersive Machinery (1.21.1, GPL-3.0) | A escavadora de túnel quebra blocos numa faixa 3 de largura à frente usando os vetores frente/direita/cima do veículo e um "orçamento" de quebra por tick: mesmo padrão do nosso compactador. Ele é construído sobre o Immersive Aircraft como biblioteca. |
 
 O Immersive Aircraft **não** pode ser dependência: não existe versão para 26.3 (vai até 26.2).
+
+## B5. Estado da implementação
+
+### Fase 1 — núcleo (implementada)
+
+| Parte da Parte A | Onde está |
+|---|---|
+| Caldeira (A3) | `boiler/BoilerSimulation` (Java puro, 13 testes JUnit) + `LandshipEntity.serverTick` |
+| Movimento (A4) | `LandshipEntity.drive()` no lado com autoridade; terreno por tags `vapor_trilhos:terrain/*` |
+| Integridade e reparo (A5) | `LandshipEntity` + `RepairMaterials` + tags `vapor_trilhos:repair/*` |
+| Itens e receitas (A7) | `registry/ModItems`, `data/vapor_trilhos/recipe/` (Fase 1: esteira, caldeira, landship, chave, kit) |
+| Painel, HUD, teclas | `client/screen/LandshipScreen`, `client/hud/LandshipHud`, `VaporTrilhosClient` |
+
+Decisões e detalhes que a Parte A não fixava:
+
+- **Combustível no 26.3:** o tempo de queima virou componente de dados (`minecraft:cooking_fuel`)
+  resolvido com um contexto de loot que depende do bloco (fornalha × alto-forno). Usamos o
+  contexto de uma fornalha comum (`FuelHelper`): carvão = 80 s, como na Parte A.
+- **Água:** qualquer recipiente reconhecido pela Transfer API (balde, garrafa, mods). O
+  tanque só aceita o recipiente inteiro (um balde não entra com menos de 1.000 mB livres).
+- **Giro:** o giro também precisa de vapor — a velocidade de giro é proporcional à potência,
+  com mínimo de 35 % enquanto houver pelo menos 2 bar.
+- **Colisão:** o servidor detecta batidas pela desaceleração (queda de mais de 1,5 m/s num
+  tick partindo de 3 m/s ou mais), porque com o piloto no comando quem move é o cliente.
+- **Botões do painel** usam o mecanismo vanilla de botão de menu (`clickMenuButton`); as teclas
+  R, V e H usam um payload próprio (`LandshipActionPayload`), validado no servidor (só o piloto).
+- **Janela do jogo:** o 26.3 usa SDL3 em vez de GLFW. Em ambiente sem tela (CI/Xvfb), o cliente
+  precisa de `SDL_VIDEO_FORCE_EGL=1`.
+- **Ponto a revisar:** em terceira pessoa, a chaminé e a fumaça ficam bem atrás do piloto e
+  atrapalham a visão.
+
+Testes: 13 JUnit (caldeira), 15 GameTests de servidor (`./gradlew build`), 1 GameTest de cliente
+(`./gradlew runClientGameTest`, no CI com Xvfb e prints como artefato).
 
 ## B4. Plano de entregas
 

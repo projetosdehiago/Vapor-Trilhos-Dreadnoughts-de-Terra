@@ -19,7 +19,6 @@ import io.github.projetosdehiago.vaportrilhos.registry.ModDataComponents;
 import io.github.projetosdehiago.vaportrilhos.registry.ModItems;
 import io.github.projetosdehiago.vaportrilhos.registry.ModSounds;
 import io.github.projetosdehiago.vaportrilhos.registry.ModTags;
-import java.util.List;
 import net.fabricmc.fabric.api.menu.v1.ExtendedMenuProvider;
 import net.fabricmc.fabric.api.transfer.v1.context.ContainerItemContext;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidConstants;
@@ -624,7 +623,7 @@ public class LandshipEntity extends VehicleEntity implements HasCustomInventoryS
 
 		if (player.isSecondaryUseActive()) {
 			if (stack.is(ModItems.BOILERMAKER_WRENCH)) {
-				return level().isClientSide() ? InteractionResult.SUCCESS : tryPickUp((ServerPlayer) player);
+				return level().isClientSide() ? InteractionResult.SUCCESS : tryPickUp(player);
 			}
 			if (!level().isClientSide()) {
 				player.openMenu(this);
@@ -652,7 +651,7 @@ public class LandshipEntity extends VehicleEntity implements HasCustomInventoryS
 			if (level().isClientSide()) {
 				return InteractionResult.SUCCESS;
 			}
-			return fillWater((ServerPlayer) player, fluidStorage) ? InteractionResult.SUCCESS_SERVER : InteractionResult.FAIL;
+			return fillWater(player, fluidStorage) ? InteractionResult.SUCCESS_SERVER : InteractionResult.FAIL;
 		}
 
 		if (stack.is(Items.FLINT_AND_STEEL) || stack.is(Items.FIRE_CHARGE)) {
@@ -704,7 +703,7 @@ public class LandshipEntity extends VehicleEntity implements HasCustomInventoryS
 		return InteractionResult.PASS;
 	}
 
-	private boolean fillWater(ServerPlayer player, Storage<FluidVariant> source) {
+	private boolean fillWater(Player player, Storage<FluidVariant> source) {
 		float space = BoilerSimulation.waterSpace(boiler);
 		long maxDroplets = (long) Math.floor(space / BUCKET_MB * FluidConstants.BUCKET);
 		if (maxDroplets <= 0) {
@@ -754,7 +753,7 @@ public class LandshipEntity extends VehicleEntity implements HasCustomInventoryS
 		return InteractionResult.SUCCESS_SERVER;
 	}
 
-	private InteractionResult tryPickUp(ServerPlayer player) {
+	private InteractionResult tryPickUp(Player player) {
 		if (isVehicle()) {
 			player.sendOverlayMessage(Component.translatable("message.vapor_trilhos.pickup_occupied"));
 			return InteractionResult.FAIL;
@@ -1020,8 +1019,18 @@ public class LandshipEntity extends VehicleEntity implements HasCustomInventoryS
 		return geoCache;
 	}
 
-	/** Lista de jogadores a bordo (para a GUI e testes). */
-	public List<Entity> occupants() {
-		return getPassengers();
+	/** Estado interno da caldeira (servidor). Usado pelos GameTests. */
+	public BoilerState boilerState() {
+		return boiler;
+	}
+
+	/** Integridade no servidor (o valor sincronizado é arredondado). Usado pelos GameTests. */
+	public float serverIntegrity() {
+		return integrity;
+	}
+
+	public void setServerIntegrity(float value) {
+		integrity = Mth.clamp(value, 0f, MAX_INTEGRITY);
+		syncBoiler();
 	}
 }

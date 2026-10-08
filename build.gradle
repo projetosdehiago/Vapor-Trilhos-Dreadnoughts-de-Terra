@@ -36,6 +36,17 @@ loom {
 	}
 }
 
+fabricApi {
+	// cria o source set "gametest" e as tarefas runGameTest / runClientGameTest
+	configureTests {
+		createSourceSet = true
+		modId = 'vapor_trilhos_test'
+		enableGameTests = true
+		enableClientGameTests = true
+		eula = true
+	}
+}
+
 dependencies {
 	minecraft "com.mojang:minecraft:${project.minecraft_version}"
 	implementation "net.fabricmc:fabric-loader:${project.loader_version}"
