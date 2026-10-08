@@ -476,7 +476,11 @@ Desmontagem: verifica espaço livre para todos os blocos antes de mexer em qualq
     (visibilidade conforme os módulos instalados), `gauge_needle` (pressão), `helm` (direção),
     `body` (arfagem/rolagem do terreno).
   - Animações por controlador independente: `track_left.*` e `track_right.*` (cada esteira
-    anda para frente/ré, então girar no lugar = uma esteira em cada sentido), `engine.idle` /
+    anda para frente/ré, então girar no lugar = uma esteira em cada sentido). Cada esteira é uma
+    corrente de 21 elos (`tread_<lado>_<n>`) que contorna as rodas dentadas (`sprocket_*`) e passa
+    sobre as rodas de apoio (`wheel_*`); um ciclo leva cada elo até o lugar do seguinte, então o
+    laço não tem emenda. Velocidade 1× da animação ≈ 1 bloco/s; o código ajusta à velocidade real.
+    Também: `engine.idle` /
     `engine.working`, `compactor.roll`, `boiler.vent`, `firebox.open`. A velocidade das
     animações acompanha a velocidade real.
   - Locators para partículas: `smoke` (chaminé), `steam_vent` (válvula), `firebox_front`,

@@ -13,6 +13,7 @@ Pegada: 47 x 47 px com as saias blindadas (≈ 2,9 blocos; a caixa de colisão �
 Uso: python3 gen_landship.py
 """
 import json
+import math
 import random
 from pathlib import Path
 
@@ -128,51 +129,89 @@ cube("deck", (-23.5, 15.5, -22.5), (1, 1, 45), "dark_iron")
 cube("deck", (22.5, 15.5, -22.5), (1, 1, 45), "dark_iron")
 
 # --- Esteiras -----------------------------------------------------------------
-WHEEL_Y = 6.0
-WHEEL_Z = (-13.5, -4.5, 4.5, 13.5)
-for side, sx in (("left", LEFT), ("right", -LEFT)):
-    tb = bone(f"track_{side}", "body", pivot=(sx * 19.5, 7, 0))
+# A esteira é uma corrente de elos que percorre um laço (estádio): reta de cima, arco em volta da
+# roda dentada da frente, reta de baixo, arco em volta da roda de trás. As medidas são escolhidas
+# para a animação repetir sem emenda: em um ciclo cada elo anda exatamente até a posição do
+# próximo (passo S), e isso equivale a 45° nas rodas dentadas e 90° nas rodas de apoio — as duas
+# têm simetria de 45°, então o recomeço do ciclo é invisível.
+TRACK_YC = 7.0                     # altura do eixo das rodas dentadas
+LINK_R = 6.0                       # raio do caminho do centro dos elos nos arcos
+LINK_S = LINK_R * math.pi / 4      # passo entre elos (= 45° no arco)
+STRAIGHT_LINKS = 13                # elos nas duas retas juntas
+TRACK_H = STRAIGHT_LINKS * LINK_S / 4  # meia distância entre eixos das rodas dentadas
+LINK_COUNT = 8 + STRAIGHT_LINKS
+TRACK_PERIM = LINK_COUNT * LINK_S
+TRACK_CYCLE = 0.3                  # segundos por passo na velocidade 1x (≈ 1 bloco/s)
+ROAD_R = LINK_R / 2                # rodas de apoio giram 90° por passo
+ROAD_Z = (-6.5, 0.0, 6.5)
+SPROCKET_R = 5.0
 
-    def tc(origin, size, mat, b=tb, pivot=None, rotation=None):
+
+def track_path(u):
+    """Posição (z, y) do centro do elo e ângulo β (rotação X, graus) no parâmetro u ≥ 0.
+
+    u cresce no sentido do movimento para a frente (reta de cima anda para -Z).
+    β = 0 com a face externa para cima; cresce 360° por volta (contínuo, sem voltar a 0).
+    """
+    turns, u = divmod(u, TRACK_PERIM)
+    L = 2 * TRACK_H
+    arc = math.pi * LINK_R
+    if u < L:                                           # reta de cima: de trás para a frente
+        z, y, b = TRACK_H - u, TRACK_YC + LINK_R, 0.0
+    elif u < L + arc:                                   # arco da frente: desce
+        a = (u - L) / LINK_R
+        z, y, b = -TRACK_H - LINK_R * math.sin(a), TRACK_YC + LINK_R * math.cos(a), math.degrees(a)
+    elif u < 2 * L + arc:                               # reta de baixo: da frente para trás
+        z, y, b = -TRACK_H + (u - L - arc), TRACK_YC - LINK_R, 180.0
+    else:                                               # arco de trás: sobe
+        a = (u - 2 * L - arc) / LINK_R
+        z, y, b = TRACK_H + LINK_R * math.sin(a), TRACK_YC - LINK_R * math.cos(a), 180.0 + math.degrees(a)
+    return z, y, b + 360.0 * turns
+
+
+def octagon(bone_name, center_yz, radius, x0, width, mat, emit):
+    """Disco octogonal (4 barras) girando em X; larguras diferentes para não cintilar."""
+    yc, zc = center_yz
+    half_side = radius * 0.4142
+    bars = [((radius, half_side), None), ((half_side, radius), None),
+            ((half_side, radius), 45), ((half_side, radius), -45)]
+    for i, ((hy, hz), rot) in enumerate(bars):
+        inset = 0.1 * i
+        emit(bone_name, (x0 + inset, yc - hy, zc - hz), (width - 2 * inset, 2 * hy, 2 * hz), mat,
+             pivot=(x0 + width / 2, yc, zc) if rot else None, rotation=(rot, 0, 0) if rot else None)
+
+
+for side, sx in (("left", LEFT), ("right", -LEFT)):
+    tb = bone(f"track_{side}", "body", pivot=(sx * 19.5, TRACK_YC, 0))
+
+    def tc(b, origin, size, mat, pivot=None, rotation=None):
         if sx < 0:
             origin, size = mirror_x(origin, size)
             if pivot:
                 pivot = (-pivot[0], pivot[1], pivot[2])
         cube(b, origin, size, mat, pivot=pivot, rotation=rotation)
 
-    # laço da esteira: corridas de cima/baixo, pontas e cantos chanfrados
-    tc((16, 11, -19), (7, 3, 38), {"*": "tread_v", "up": "tread_h", "down": "tread_h"})
-    tc((16, 1, -19), (7, 2, 38), {"*": "tread_v", "up": "tread_h", "down": "tread_h"})
-    tc((16, 3, -22), (7, 8, 3), {"*": "tread_v", "north": "tread_h"})
-    tc((16, 3, 19), (7, 8, 3), {"*": "tread_v", "south": "tread_h"})
-    for zc in (-20.5, 20.5):
-        for yc in (2.5, 11.5):
-            tc((16.05, yc - 1.4, zc - 1.4), (6.9, 2.8, 2.8), "tread_v",
-               pivot=(19.5, yc, zc), rotation=(45, 0, 0))
-    # saia blindada: cobre a metade de cima da esteira pelo lado de fora
-    tc((22.6, 8, -20), (1, 6.6, 40), {"*": "iron_plate", "up": "dark_iron"})
-    tc((22.4, 13.6, -21), (1.4, 1.2, 42), "dark_iron")
+    # elos: cada um é um osso com a pose de repouso no seu lugar do laço
+    for i in range(LINK_COUNT):
+        z, y, b = track_path(i * LINK_S)
+        lb = bone(f"tread_{side}_{i}", tb, pivot=(sx * 19.4, y, z), rotation=(b, 0, 0) if b else None)
+        tc(lb, (16.4, y - 0.5, z - 2.0), (5.9, 1, 4.0), {"*": "dark_iron", "up": "tread_h", "down": "tread_h"})
+        tc(lb, (16.6, y + 0.5, z - 0.7), (5.5, 0.5, 1.4), "dark_iron")             # garra
 
-    # garras (animadas: as de cima andam para a frente, as de baixo para trás)
-    top = bone(f"tread_{side}_top", tb, pivot=(sx * 19.5, 14, 0))
-    bot = bone(f"tread_{side}_bottom", tb, pivot=(sx * 19.5, 0, 0))
-    for z in range(-18, 18, 4):
-        tc((16.2, 14, z), (6.2, 0.8, 1.5), "dark_iron", b=top)
-        tc((16.2, 0.2, z), (6.2, 0.8, 1.5), "dark_iron", b=bot)
+    # rodas dentadas (frente e trás) dentro dos arcos, e rodas de apoio embaixo
+    for name, zc in (("front", -TRACK_H), ("rear", TRACK_H)):
+        wb = bone(f"sprocket_{side}_{name}", tb, pivot=(sx * 19.5, TRACK_YC, zc))
+        octagon(wb, (TRACK_YC, zc), SPROCKET_R, 17.0, 5.0, "dark_iron", tc)
+        octagon(wb, (TRACK_YC, zc), 1.2, 22.0, 0.5, "brass", tc)
+    road_y = TRACK_YC - LINK_R + 0.5 + ROAD_R                 # encosta na face interna dos elos de baixo
+    for i, zc in enumerate(ROAD_Z):
+        wb = bone(f"wheel_{side}_{i}", tb, pivot=(sx * 19.5, road_y, zc))
+        octagon(wb, (road_y, zc), ROAD_R, 17.4, 4.2, "dark_iron", tc)
+        octagon(wb, (road_y, zc), 0.9, 21.6, 0.5, "brass", tc)
 
-    # rodas de apoio: octógono feito de 4 barras (cada uma com largura própria, para não cintilar),
-    # raio 3,8 — cabe entre as corridas da esteira; a saia esconde a metade de cima
-    for i, zc in enumerate(WHEEL_Z):
-        wb = bone(f"wheel_{side}_{i}", tb, pivot=(sx * 19.5, WHEEL_Y, zc))
-        tc((17.0, WHEEL_Y - 3.5, zc - 1.5), (5.0, 7, 3), "dark_iron", b=wb)
-        tc((17.1, WHEEL_Y - 1.5, zc - 3.5), (4.8, 3, 7), "dark_iron", b=wb)
-        tc((17.2, WHEEL_Y - 1.5, zc - 3.5), (4.6, 3, 7), "dark_iron", b=wb,
-           pivot=(19.5, WHEEL_Y, zc), rotation=(45, 0, 0))
-        tc((17.3, WHEEL_Y - 1.5, zc - 3.5), (4.4, 3, 7), "dark_iron", b=wb,
-           pivot=(19.5, WHEEL_Y, zc), rotation=(-45, 0, 0))
-        tc((22.0, WHEEL_Y - 1, zc - 1), (0.5, 2, 2), "brass", b=wb)                   # cubo
-        tc((22.0, WHEEL_Y - 1, zc - 1), (0.4, 2, 2), "brass", b=wb,
-           pivot=(22.2, WHEEL_Y, zc), rotation=(45, 0, 0))
+    # saia blindada: cobre a parte reta de cima; os arcos com as rodas dentadas ficam à mostra
+    tc(tb, (22.6, 8, -15), (1, 6.6, 30), {"*": "iron_plate", "up": "dark_iron"})
+    tc(tb, (22.4, 13.6, -16), (1.4, 1.2, 32), "dark_iron")
 
 # --- Cabine -------------------------------------------------------------------
 ROOF_Y = 43
@@ -400,12 +439,29 @@ geo = {
 # Animações (todas em laço sem emenda: rodas repetem a cada 45°, garras a cada 4 px)
 # ----------------------------------------------------------------------------
 def track_anim(side, direction):
-    rot = 90 * direction        # frente = -Z: topo da roda vai para a frente
-    shift = -8 * direction
-    bones_ = {f"wheel_{side}_{i}": {"rotation": {"0.0": [0, 0, 0], "0.5": [rot, 0, 0]}} for i in range(4)}
-    bones_[f"tread_{side}_top"] = {"position": {"0.0": [0, 0, 0], "0.5": [0, 0, shift]}}
-    bones_[f"tread_{side}_bottom"] = {"position": {"0.0": [0, 0, 0], "0.5": [0, 0, -shift]}}
-    return {"loop": True, "animation_length": 0.5, "bones": bones_}
+    """Cada elo anda um passo (LINK_S) pelo laço; rodas dentadas giram 45°, de apoio 90°."""
+    steps = 8
+    bones_ = {}
+    for i in range(LINK_COUNT):
+        u0 = i * LINK_S
+        z0, y0, b0 = track_path(u0)
+        pos, rot = {}, {}
+        for k in range(steps + 1):
+            t = k / steps
+            # ré: anda para trás (u diminui); soma uma volta para manter u positivo
+            z, y, b = track_path(u0 + direction * LINK_S * t + (TRACK_PERIM if direction < 0 else 0))
+            if direction < 0:
+                b -= 360.0
+            key = f"{round(t * TRACK_CYCLE, 4)}"
+            pos[key] = [0, round(y - y0, 4), round(z - z0, 4)]
+            rot[key] = [round(b - b0, 3), 0, 0]
+        bones_[f"tread_{side}_{i}"] = {"position": pos, "rotation": rot}
+    end = f"{TRACK_CYCLE}"
+    for name in ("front", "rear"):
+        bones_[f"sprocket_{side}_{name}"] = {"rotation": {"0.0": [0, 0, 0], end: [45 * direction, 0, 0]}}
+    for i in range(len(ROAD_Z)):
+        bones_[f"wheel_{side}_{i}"] = {"rotation": {"0.0": [0, 0, 0], end: [90 * direction, 0, 0]}}
+    return {"loop": True, "animation_length": TRACK_CYCLE, "bones": bones_}
 
 
 def piston_anim(length, amp, body_shake):
