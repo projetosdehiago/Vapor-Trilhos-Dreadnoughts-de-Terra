@@ -41,9 +41,10 @@ consertar o desgaste → expandir com módulos**. A logística de água é o gar
 ### A2.0 Visual
 
 Fonte do modelo: `design/model/` (geometria Bedrock, a mesma que o GeckoLib e o Bedrock usam).
-Cabine aberta com teto de cobre na frente, bancos no meio, caldeira verde com cintas de cobre e
-chaminé atrás, dois cilindros verticais com pistões entre bancos e caldeira, esteiras com rodas
-de apoio visíveis. Os 6 encaixes de módulo ficam nas laterais do deque (células 3×3); o
+Cabine aberta com teto de cobre na frente e lanterna, leme de navio em pé sobre um pedestal
+virado para o piloto, bancos no meio, caldeira verde com cintas de cobre, manômetro e chaminé
+atrás, dois cilindros verticais com pistões entre bancos e caldeira, faróis na frente. Esteiras
+com saia blindada por fora cobrindo a metade de cima; as rodas de apoio aparecem embaixo. Os 6 encaixes de módulo ficam nas laterais do deque (células 3×3); o
 compactador é um rolo à frente. Altura visual até o topo da chaminé: 3,4 blocos.
 
 ### A2.1 Controles (padrão; todos reconfiguráveis)

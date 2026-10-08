@@ -201,8 +201,8 @@ function boxGeometry(c) {
     south: [[x0, y1, z1], [x1, y1, z1], [x0, y0, z1], [x1, y0, z1]],
     east:  [[x0, y1, z0], [x0, y1, z1], [x0, y0, z0], [x0, y0, z1]],
     west:  [[x1, y1, z1], [x1, y1, z0], [x1, y0, z1], [x1, y0, z0]],
-    up:    [[x1, y1, z0], [x0, y1, z0], [x1, y1, z1], [x0, y1, z1]],
-    down:  [[x1, y0, z1], [x0, y0, z1], [x1, y0, z0], [x0, y0, z0]],
+    up:    [[x0, y1, z0], [x1, y1, z0], [x0, y1, z1], [x1, y1, z1]],
+    down:  [[x0, y0, z1], [x1, y0, z1], [x0, y0, z0], [x1, y0, z0]],
   };
   const pos = [], uv = [], idx = [];
   for (const [name, q] of Object.entries(faces)) {

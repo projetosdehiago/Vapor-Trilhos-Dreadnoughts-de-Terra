@@ -8,7 +8,7 @@ Saídas (no mesmo diretório deste script):
   landship_glowmask.png     partes que brilham (fornalha, lanterna) — usado pelo GeckoLib
 
 Unidades: 16 px = 1 bloco. Origem no chão, centro do veículo. Frente = -Z (norte).
-Pegada: 46 x 46 px (≈ 2,9 blocos). Casco até y=18; cabine e chaminé acima disso são visuais.
+Pegada: 47 x 47 px com as saias blindadas (≈ 2,9 blocos; a caixa de colisão é 2,9). Casco até y=18; cabine e chaminé acima disso são visuais.
 
 Uso: python3 gen_landship.py
 """
@@ -99,173 +99,269 @@ def mirror_x(origin, size):
     return (-(origin[0] + size[0]), origin[1], origin[2]), size
 
 
+# A geometria Bedrock tem o eixo X espelhado em relação ao mundo (o Blockbench e o GeckoLib
+# invertem X ao carregar). Com a frente em -Z, a ESQUERDA do piloto fica em X positivo aqui.
+LEFT = 1
+
 bone("root")
 bone("body", "root", pivot=(0, 8, 0))
+
+# Regra deste arquivo: duas faces nunca podem ficar no mesmo plano, viradas para o mesmo lado e
+# sobrepostas (isso cintila no jogo). `check_coplanar_faces()` no fim falha a geração se acontecer.
 
 # --- Casco e deque ----------------------------------------------------------
 bone("hull", "body", pivot=(0, 8, 0))
 cube("hull", (-16, 3, -21), (32, 13, 42), "iron_plate")
-cube("hull", (-16, 4, -23), (32, 12, 2), {"*": "iron_plate", "north": "iron_plate"})   # placa frontal
-cube("hull", (-16, 4, 21), (32, 12, 2), "iron_plate")                                  # placa traseira
-cube("hull", (-14, 9, -24), (28, 2, 1), "copper")                                      # friso frontal
+cube("hull", (-16, 4, -23), (32, 12, 2), "iron_plate")                                  # placa frontal
+cube("hull", (-16, 4, 21), (32, 12, 2), "iron_plate")                                   # placa traseira
+cube("hull", (-8, 13, -23.6), (16, 1.5, 0.6), "copper")                                # friso frontal
+cube("hull", (-1.5, 5, 23), (3, 2, 2), "dark_iron")                                     # gancho de reboque
+for sx in (-1, 1):                                                                      # faróis
+    x0 = 9.5 if sx > 0 else -13.5
+    cube("hull", (x0, 9.5, -24), (4, 4, 1), "dark_iron")
+    cube("hull", (x0 + 0.5, 10, -24.4), (3, 3, 0.4), {"*": "brass", "north": "firebox"})
 bone("deck", "body", pivot=(0, 17, 0))
 cube("deck", (-23, 16, -23), (46, 2, 46), {"*": "iron_plate", "up": "planks"})
-for z in (-23.5, 22.5):                                                                # cantoneiras
-    cube("deck", (-23.5, 15.5, z), (47, 1, 1), "dark_iron")
-for x in (-23.5, 22.5):
-    cube("deck", (x, 15.5, -23), (1, 1, 46), "dark_iron")
+cube("deck", (-23.5, 15.5, -23.5), (47, 1, 1), "dark_iron")                             # cantoneiras
+cube("deck", (-23.5, 15.5, 22.5), (47, 1, 1), "dark_iron")
+cube("deck", (-23.5, 15.5, -22.5), (1, 1, 45), "dark_iron")
+cube("deck", (22.5, 15.5, -22.5), (1, 1, 45), "dark_iron")
 
 # --- Esteiras -----------------------------------------------------------------
-for side, sx in (("left", -1), ("right", 1)):
+WHEEL_Y = 6.0
+WHEEL_Z = (-13.5, -4.5, 4.5, 13.5)
+for side, sx in (("left", LEFT), ("right", -LEFT)):
     tb = bone(f"track_{side}", "body", pivot=(sx * 19.5, 7, 0))
 
-    def tc(origin, size, mat, b=tb, **kw):
+    def tc(origin, size, mat, b=tb, pivot=None, rotation=None):
         if sx < 0:
             origin, size = mirror_x(origin, size)
-        cube(b, origin, size, mat, **kw)
+            if pivot:
+                pivot = (-pivot[0], pivot[1], pivot[2])
+        cube(b, origin, size, mat, pivot=pivot, rotation=rotation)
 
-    # laço da esteira (corridas de cima/baixo e as pontas)
-    tc((16, 11, -20), (7, 3, 40), {"*": "tread_v", "up": "tread_h", "down": "tread_h"})
-    tc((16, 1, -20), (7, 2, 40), {"*": "tread_v", "up": "tread_h", "down": "tread_h"})
-    tc((16, 3, -23), (7, 8, 3), {"*": "tread_v", "north": "tread_h"})
-    tc((16, 3, 20), (7, 8, 3), {"*": "tread_v", "south": "tread_h"})
-    tc((16, 1.5, -22), (7, 2, 2), "tread_v", pivot=(sx * 19.5, 2.5, -21), rotation=(45, 0, 0))
-    tc((16, 11.5, -22), (7, 2, 2), "tread_v", pivot=(sx * 19.5, 12.5, -21), rotation=(45, 0, 0))
-    tc((16, 1.5, 20), (7, 2, 2), "tread_v", pivot=(sx * 19.5, 2.5, 21), rotation=(45, 0, 0))
-    tc((16, 11.5, 20), (7, 2, 2), "tread_v", pivot=(sx * 19.5, 12.5, 21), rotation=(45, 0, 0))
-    # placa interna (esconde o vão entre esteira e casco)
-    tc((15.5, 3, -20), (0.5, 8, 40), "dark_iron")
+    # laço da esteira: corridas de cima/baixo, pontas e cantos chanfrados
+    tc((16, 11, -19), (7, 3, 38), {"*": "tread_v", "up": "tread_h", "down": "tread_h"})
+    tc((16, 1, -19), (7, 2, 38), {"*": "tread_v", "up": "tread_h", "down": "tread_h"})
+    tc((16, 3, -22), (7, 8, 3), {"*": "tread_v", "north": "tread_h"})
+    tc((16, 3, 19), (7, 8, 3), {"*": "tread_v", "south": "tread_h"})
+    for zc in (-20.5, 20.5):
+        for yc in (2.5, 11.5):
+            tc((16.05, yc - 1.4, zc - 1.4), (6.9, 2.8, 2.8), "tread_v",
+               pivot=(19.5, yc, zc), rotation=(45, 0, 0))
+    # saia blindada: cobre a metade de cima da esteira pelo lado de fora
+    tc((22.6, 8, -20), (1, 6.6, 40), {"*": "iron_plate", "up": "dark_iron"})
+    tc((22.4, 13.6, -21), (1.4, 1.2, 42), "dark_iron")
 
     # garras (animadas: as de cima andam para a frente, as de baixo para trás)
     top = bone(f"tread_{side}_top", tb, pivot=(sx * 19.5, 14, 0))
     bot = bone(f"tread_{side}_bottom", tb, pivot=(sx * 19.5, 0, 0))
     for z in range(-18, 18, 4):
-        tc((16, 14, z), (7, 1, 1.5), "dark_iron", b=top)
-        tc((16, 0, z), (7, 1, 1.5), "dark_iron", b=bot)
+        tc((16.2, 14, z), (6.2, 0.8, 1.5), "dark_iron", b=top)
+        tc((16.2, 0.2, z), (6.2, 0.8, 1.5), "dark_iron", b=bot)
 
-    # rodas de apoio (octógono = 2 caixas, uma girada 45°)
-    for i, zc in enumerate((-15, -5, 5, 15)):
-        wb = bone(f"wheel_{side}_{i}", tb, pivot=(sx * 19.5, 7, zc))
-        tc((17, 3, zc - 4), (5, 8, 8), {"*": "dark_iron", "east": "brass", "west": "brass"}, b=wb)
-        tc((17, 3, zc - 4), (5, 8, 8), "dark_iron", b=wb, pivot=(sx * 19.5, 7, zc), rotation=(45, 0, 0))
-        tc((22, 5.5, zc - 1.5), (0.8, 3, 3), "brass", b=wb)  # cubo da roda
+    # rodas de apoio: octógono feito de 4 barras (cada uma com largura própria, para não cintilar),
+    # raio 3,8 — cabe entre as corridas da esteira; a saia esconde a metade de cima
+    for i, zc in enumerate(WHEEL_Z):
+        wb = bone(f"wheel_{side}_{i}", tb, pivot=(sx * 19.5, WHEEL_Y, zc))
+        tc((17.0, WHEEL_Y - 3.5, zc - 1.5), (5.0, 7, 3), "dark_iron", b=wb)
+        tc((17.1, WHEEL_Y - 1.5, zc - 3.5), (4.8, 3, 7), "dark_iron", b=wb)
+        tc((17.2, WHEEL_Y - 1.5, zc - 3.5), (4.6, 3, 7), "dark_iron", b=wb,
+           pivot=(19.5, WHEEL_Y, zc), rotation=(45, 0, 0))
+        tc((17.3, WHEEL_Y - 1.5, zc - 3.5), (4.4, 3, 7), "dark_iron", b=wb,
+           pivot=(19.5, WHEEL_Y, zc), rotation=(-45, 0, 0))
+        tc((22.0, WHEEL_Y - 1, zc - 1), (0.5, 2, 2), "brass", b=wb)                   # cubo
 
 # --- Cabine -------------------------------------------------------------------
+ROOF_Y = 43
 bone("cabin", "body", pivot=(0, 18, -8))
-cube("cabin", (-8, 18, -23), (16, 8, 2), {"*": "iron_plate", "south": "planks"})       # painel frontal
+cube("cabin", (-6, 18, -23), (12, 7, 2), {"*": "iron_plate", "south": "planks"})       # painel frontal
 for x in (-8, 6):
     for z in (-23, 6):
-        cube("cabin", (x, 18, z), (2, 22, 2), "dark_iron")                             # colunas
-cube("cabin", (-9.5, 40, -24.5), (19, 2, 34), {"*": "copper", "up": "planks"})         # teto
-cube("cabin", (-7.5, 42, -22), (15, 1, 29), "copper")                                  # cumeeira
+        cube("cabin", (x, 18, z), (2, ROOF_Y - 18, 2), "dark_iron")                    # colunas
+cube("cabin", (-9.5, ROOF_Y, -24.5), (19, 2, 34), {"*": "copper", "up": "planks"})     # teto
+cube("cabin", (-7.5, ROOF_Y + 2, -22), (15, 1, 29), "copper")                          # cumeeira
+cube("cabin", (-6, ROOF_Y - 2, -22.8), (12, 1, 1), "brass")                            # verga da frente
 for x in (-8.5, 7.5):
     cube("cabin", (x, 27, -21), (1, 1, 27), "brass")                                   # corrimãos
 cube("cabin", (-4, 18, -14), (8, 3, 6), "leather")                                     # banco do piloto
-cube("cabin", (-4, 21, -9), (8, 6, 1), "leather")
+cube("cabin", (-4, 21, -9), (8, 7, 1), "leather")
 cube("cabin", (-7, 18, -4), (14, 3, 6), "leather")                                     # banco dos passageiros
 cube("cabin", (-7, 21, 1.5), (14, 6, 1), "leather")
-cube("cabin", (-0.5, 18, -20.5), (1, 9, 1), "dark_iron")                               # coluna de direção
-bone("lantern", "cabin", pivot=(0, 38, -25))
-cube("lantern", (-1, 36.5, -26), (2, 3, 2), {"*": "firebox", "up": "brass", "down": "brass"})
-cube("lantern", (-1.5, 39.5, -26.5), (3, 0.5, 3), "brass")
+cube("cabin", (-2, 18, -21), (4, 9, 2.6), {"*": "copper", "up": "brass"})                # pedestal do leme
+cube("cabin", (-0.5, 26.5, -18.4), (1, 1, 1.0), "dark_iron")                             # eixo do leme
+bone("lantern", "cabin", pivot=(0, ROOF_Y, -25))
+cube("lantern", (-0.5, ROOF_Y - 1, -25.6), (1, 1, 1.3), "dark_iron")                   # suporte
+cube("lantern", (-1, ROOF_Y - 4, -26.5), (2, 3, 2), {"*": "firebox", "up": "brass", "down": "brass"})
+cube("lantern", (-1.4, ROOF_Y - 1.3, -26.9), (2.8, 0.5, 2.8), "brass")
 
-bone("helm", "cabin", pivot=(0, 27, -19.5), rotation=(-55, 0, 0))                      # leme
-cube("helm", (-4, 26.5, -20), (8, 1, 1), "planks")
-cube("helm", (-0.5, 23, -20), (1, 8, 1), "planks")
-cube("helm", (-4, 30.5, -20), (8, 1, 1), "brass")
-cube("helm", (-4, 22.5, -20), (8, 1, 1), "brass")
-cube("helm", (-4.5, 22.5, -20), (1, 9, 1), "brass")
-cube("helm", (3.5, 22.5, -20), (1, 9, 1), "brass")
-cube("helm", (-1, 26, -20.5), (2, 2, 2), "copper")
+# leme de navio, em pé e virado para o piloto (ele fica atrás, em +Z); gira em Z ao esterçar
+HELM_C = (0.0, 27.0, -17.4)
+HELM_R = 5.0
+bone("helm", "cabin", pivot=HELM_C)
+seg = 2 * HELM_R * 0.4142                                                               # lado do octógono
+for k in range(8):
+    t = 1.0 if k % 2 == 0 else 1.2                                                     # espessuras alternadas
+    cube("helm", (-seg / 2, HELM_C[1] + HELM_R - 1, HELM_C[2] - t / 2), (seg, 1, t), "planks",
+         pivot=HELM_C, rotation=(0, 0, k * 45))
+for k in range(4):
+    th = 0.8 + 0.04 * k
+    cube("helm", (-(HELM_R + 1.6), HELM_C[1] - th / 2, HELM_C[2] - th / 2), (2 * (HELM_R + 1.6), th, th),
+         "planks", pivot=HELM_C, rotation=(0, 0, k * 45 + 22.5))
+cube("helm", (-1.2, HELM_C[1] - 1.2, HELM_C[2] - 1.1), (2.4, 2.4, 2.2), "brass")       # cubo central
 
 # --- Caldeira -----------------------------------------------------------------
 bone("boiler", "body", pivot=(0, 24, 15.5),
-     locators={"steam_vent": (4, 35, 13), "firebox_front": (0, 23, 25)})
-cube("boiler", (-7, 20, 8), (14, 9, 15), "boiler_green")
-cube("boiler", (-5, 18, 8), (10, 13, 15), "boiler_green")
-for z in (9, 14.5, 20):                                                                # cintas de cobre
+     locators={"steam_vent": (3.5, 35, 12.5), "firebox_front": (0, 23, 25)})
+# corpo arredondado = 3 caixas sobrepostas com todas as faces em planos diferentes
+cube("boiler", (-7, 20, 8.2), (14, 9, 14.6), "boiler_green")
+cube("boiler", (-6, 19, 8.1), (12, 11, 14.8), "boiler_green")
+cube("boiler", (-5, 18, 8.0), (10, 13, 15.0), "boiler_green")
+for z in (9.5, 14.5, 19.5):                                                            # cintas de cobre
     cube("boiler", (-7.5, 19.5, z), (15, 10, 1), "copper")
-    cube("boiler", (-5.5, 18, z), (11, 13.5, 1), "copper")
-cube("boiler", (-4, 20, 7), (8, 6, 1), "dark_iron")                                    # porta da caixa de fumaça
-cube("boiler", (-2.5, 26.5, 7), (5, 5, 1), {"*": "brass", "north": "gauge"})           # manômetro
+    cube("boiler", (-6.5, 18.5, z + 0.15), (13, 12, 0.7), "copper")
+    cube("boiler", (-5.5, 18.1, z + 0.3), (11, 13.4, 0.4), "copper")
+cube("boiler", (-4, 20.5, 7.4), (8, 7, 0.7), "dark_iron")                              # porta da caixa de fumaça
+cube("boiler", (-3, 19.5, 7.5), (6, 9, 0.65), "dark_iron")
+cube("boiler", (2.6, 23.5, 7.1), (0.8, 1.5, 0.5), "brass")                             # trinco
+cube("boiler", (-2.5, 29, 7.2), (5, 5, 0.9), {"*": "brass", "north": "gauge"})         # manômetro
 cube("boiler", (2.5, 31, 11.5), (2, 3, 2), "brass")                                    # válvula de segurança
 cube("boiler", (2, 34, 11), (3, 1, 3), "brass")
-bone("gauge_needle", "boiler", pivot=(0, 29, 6.8))
-cube("gauge_needle", (-0.25, 29, 6.6), (0.5, 2, 0.3), "red_fabric")
-bone("firebox_door", "boiler", pivot=(-5, 23, 24))
-cube("firebox_door", (-5, 18.5, 23), (10, 9, 1.5), {"*": "dark_iron", "south": "firebox"})
-cube("firebox_door", (3, 22, 24.5), (1, 2, 1), "brass")                                # puxador
+bone("gauge_needle", "boiler", pivot=(0, 31.5, 7.1))
+cube("gauge_needle", (-0.25, 31.5, 7.0), (0.5, 2, 0.2), "red_fabric")
+bone("firebox_door", "boiler", pivot=(-5, 23, 23.5))
+cube("firebox_door", (-5.2, 18.5, 22.95), (10.4, 9, 1.2), {"*": "dark_iron", "south": "firebox"})
+cube("firebox_door", (3, 22, 24.15), (1, 2, 0.8), "brass")                             # puxador
 bone("whistle", "boiler", pivot=(0, 31, 10.5))
 cube("whistle", (-0.5, 31, 10), (1, 4, 1), "brass")
 cube("whistle", (-1, 35, 9.5), (2, 2.5, 2), "brass")
 bone("chimney", "boiler", pivot=(0, 31, 19), locators={"smoke": (0, 54, 19)})
 cube("chimney", (-3, 31, 16), (6, 2, 6), "dark_iron")
 cube("chimney", (-2, 33, 17), (4, 18, 4), "soot")
-cube("chimney", (-3, 51, 16), (6, 2, 6), "dark_iron")
 cube("chimney", (-2.5, 46, 16.5), (5, 1, 5), "copper")
+cube("chimney", (-3, 51, 16), (6, 2, 6), "dark_iron")
 
 # --- Motor: cilindros verticais com pistões animados --------------------------
-for side, sx in (("left", -1), ("right", 1)):
-    eb = bone(f"engine_{side}", "body", pivot=(sx * 5.5, 18, 5.5))
+for side, sx in (("left", LEFT), ("right", -LEFT)):
+    eb = bone(f"engine_{side}", "body", pivot=(sx * 4, 18, 5))
 
     def ec(origin, size, mat, b=eb):
         if sx < 0:
             origin, size = mirror_x(origin, size)
         cube(b, origin, size, mat)
 
-    ec((4, 18, 4), (3, 9, 3), "copper")
-    ec((3.5, 26, 3.5), (4, 1, 4), "brass")
-    pb = bone(f"piston_{side}", eb, pivot=(sx * 5.5, 27, 5.5))
-    ec((5, 27, 5), (1, 5, 1), "brass", b=pb)
-    ec((4.5, 32, 4.5), (2, 1, 2), "dark_iron", b=pb)
+    ec((2.5, 18, 3.5), (3, 8, 3), "copper")
+    ec((2, 26, 3), (4, 1, 4), "brass")
+    pb = bone(f"piston_{side}", eb, pivot=(sx * 4, 27, 5))
+    ec((3.5, 27, 4.5), (1, 5, 1), "brass", b=pb)
+    ec((3, 32, 4), (2, 1, 2), "dark_iron", b=pb)
 
 # --- Encaixes de módulo -------------------------------------------------------
-# células 3x3 do deque: colunas L/R (x = ∓15,5), linhas F/M/R (z = -15,5 / 0 / 15,5)
+# células 3x3 do deque: colunas L/R (x = ±15,5), linhas F/M/R (z = -15,5 / 0 / 15,5)
 SLOTS = {
-    "slot_fl": (-15.5, -15.5), "slot_fr": (15.5, -15.5),
-    "slot_ml": (-15.5, 0.0), "slot_mr": (15.5, 0.0),
-    "slot_rl": (-15.5, 15.5), "slot_rr": (15.5, 15.5),
+    "slot_fl": (LEFT * 15.5, -15.5), "slot_fr": (-LEFT * 15.5, -15.5),
+    "slot_ml": (LEFT * 15.5, 0.0), "slot_mr": (-LEFT * 15.5, 0.0),
+    "slot_rl": (LEFT * 15.5, 15.5), "slot_rr": (-LEFT * 15.5, 15.5),
 }
+MODULE_KINDS = ("bed", "cargo", "furnace")
 for name, (cx, cz) in SLOTS.items():
     out = -1 if cx < 0 else 1  # lado de fora do veículo
     bone(name, "body", pivot=(cx, 18, cz))
 
     b = bone(f"{name}_bed", name, pivot=(cx, 18, cz))
     cube(b, (cx - 6.5, 18, cz - 6.5), (13, 3, 13), "planks")
-    cube(b, (cx - 6, 21, cz - 6), (12, 2, 12), {"*": "red_fabric"})
+    cube(b, (cx - 6, 20.9, cz - 6), (12, 2.1, 12), "red_fabric")
     cube(b, (cx - 5.5, 23, cz - 5.5), (11, 1.5, 4), "white_wool")
-    cube(b, (cx - 6.5, 21, cz - 6.5), (13, 5, 1), "planks")
-    cube(b, (cx - 6.5, 21, cz + 5.5), (13, 3, 1), "planks")
+    cube(b, (cx - 6.5, 21, cz - 6.5), (13, 5, 1), "planks")                            # cabeceira
+    cube(b, (cx - 6.5, 21, cz + 5.5), (13, 3, 1), "planks")                            # pé
+    cube(b, (cx - 6.25, 22.6, cz + 1), (12.5, 0.6, 4.6), "white_wool")                  # dobra do lençol
 
     b = bone(f"{name}_cargo", name, pivot=(cx, 18, cz))
     cube(b, (cx - 6, 18, cz - 6), (12, 11, 12), "crate")
     cube(b, (cx - 6.5, 29, cz - 6.5), (13, 2, 13), {"*": "dark_iron", "up": "planks"})
-    cube(b, (cx - 6.5, 21.5, cz - 6.5), (13, 1, 13), "dark_iron")
-    cube(b, (cx + 6 if out > 0 else cx - 7, 25, cz - 1), (1, 2, 2), "brass")                # trinco
+    cube(b, (cx - 6.4, 21.5, cz - 6.4), (12.8, 1, 12.8), "dark_iron")
+    cube(b, (cx - 6.3, 25.5, cz - 6.3), (12.6, 1, 12.6), "dark_iron")
+    cube(b, ((cx + 6.4) if out > 0 else (cx - 7.0), 24, cz - 1), (0.6, 2.5, 2), "brass")  # trinco
 
     b = bone(f"{name}_furnace", name, pivot=(cx, 18, cz))
     cube(b, (cx - 6, 18, cz - 6), (12, 12, 12), "brick")
     cube(b, (cx - 6.5, 30, cz - 6.5), (13, 1, 13), "iron_plate")
-    door_x = cx + 6 if out > 0 else cx - 6.5
-    cube(b, (door_x, 19.5, cz - 3), (0.5, 6, 6), {"*": "dark_iron", "east": "firebox", "west": "firebox"})
+    door_x = (cx + 6) if out > 0 else (cx - 6.6)
+    cube(b, (door_x, 19.5, cz - 3), (0.6, 6, 6), {"*": "dark_iron", "east": "firebox", "west": "firebox"})
     cube(b, (cx - 1.5, 31, cz - 1.5), (3, 7, 3), "soot")
     cube(b, (cx - 2, 38, cz - 2), (4, 1, 4), "dark_iron")
 
 # compactador frontal (encaixe da frente, fica fora da pegada)
 bone("slot_front", "body", pivot=(0, 6, -23))
 bone("slot_front_compactor", "slot_front", pivot=(0, 6, -23))
-for x in (-20, 18):
-    cube("slot_front_compactor", (x, 4, -31), (2, 3, 8), "iron_plate")
-cube("slot_front_compactor", (-20, 7, -26), (40, 2, 2), "dark_iron")
-cube("slot_front_compactor", (-20, 9.5, -33), (40, 1, 4), "iron_plate")             # para-lama do rolo
+cube("slot_front_compactor", (-20, 4, -31), (2, 3, 8), "iron_plate")
+cube("slot_front_compactor", (18, 4, -31), (2, 3, 8), "iron_plate")
+cube("slot_front_compactor", (-19.5, 7, -26), (39, 2, 2), "dark_iron")
+cube("slot_front_compactor", (-20.5, 11, -34.5), (41, 1, 7), {"*": "iron_plate", "up": "dark_iron"})  # para-lama
+for x in (-20.5, 19.5):
+    cube("slot_front_compactor", (x, 9, -29), (1, 2, 1), "dark_iron")                  # suportes do para-lama
 bone("roller", "slot_front_compactor", pivot=(0, 4.5, -31))
 cube("roller", (-21, 0, -35.5), (42, 9, 9), {"*": "tread_v", "east": "brass", "west": "brass"})
 cube("roller", (-20.5, 0, -35.5), (41, 9, 9), "tread_v", pivot=(0, 4.5, -31), rotation=(45, 0, 0))
 
 # locais dos assentos (usados como referência pelo código)
 bone("seats", "body", pivot=(0, 21, 0),
-     locators={"seat_pilot": (0, 21, -11), "seat_passenger_0": (-3.5, 21, -1),
-               "seat_passenger_1": (3.5, 21, -1)})
+     locators={"seat_pilot": (0, 21, -11), "seat_passenger_0": (3.5, 21, -1),
+               "seat_passenger_1": (-3.5, 21, -1)})
+
+
+def check_coplanar_faces():
+    """Falha se duas faces sem rotação ficarem no mesmo plano, mesmo sentido e sobrepostas."""
+    rotated = {b["name"] for b in bones if b.get("rotation")}
+    parent = {b["name"]: b.get("parent") for b in bones}
+
+    def in_rotated(name):
+        while name:
+            if name in rotated:
+                return True
+            name = parent[name]
+        return False
+
+    def variant(name):  # módulos alternativos do mesmo encaixe nunca aparecem juntos
+        for k in MODULE_KINDS:
+            if name.endswith("_" + k):
+                return name[: -len(k) - 1], k
+        return None
+
+    faces = []
+    for b in bones:
+        if in_rotated(b["name"]):
+            continue
+        for c in b.get("cubes", []):
+            if "rotation" in c:
+                continue
+            o, s = c["origin"], c["size"]
+            for ax in range(3):
+                others = [a for a in range(3) if a != ax]
+                rect = [(o[a], o[a] + s[a]) for a in others]
+                faces.append((ax, o[ax], -1, rect, b["name"]))
+                faces.append((ax, o[ax] + s[ax], 1, rect, b["name"]))
+    problems = []
+    for i in range(len(faces)):
+        ax, pos, sg, r1, n1 = faces[i]
+        for j in range(i + 1, len(faces)):
+            ax2, pos2, sg2, r2, n2 = faces[j]
+            if ax != ax2 or sg != sg2 or abs(pos - pos2) > 1e-6:
+                continue
+            v1, v2 = variant(n1), variant(n2)
+            if v1 and v2 and v1[0] == v2[0] and v1[1] != v2[1]:
+                continue
+            ov = 1.0
+            for (a0, a1), (b0, b1) in zip(r1, r2):
+                ov *= max(0.0, min(a1, b1) - max(a0, b0))
+            if ov > 1e-6:
+                problems.append(f"{n1} x {n2}: eixo {'xyz'[ax]}={pos} área {ov:.2f}")
+    if problems:
+        raise SystemExit("Faces coplanares (cintilam no jogo):\n  " + "\n  ".join(problems))
+
+
+check_coplanar_faces()
+
 for b in bones:
     if not b["cubes"]:
         del b["cubes"]
@@ -284,7 +380,7 @@ geo = {
 }
 
 # ----------------------------------------------------------------------------
-# Animações (todas em laço sem emenda: octógono repete a cada 45°, garras a cada 4 px)
+# Animações (todas em laço sem emenda: rodas repetem a cada 45°, garras a cada 4 px)
 # ----------------------------------------------------------------------------
 def track_anim(side, direction):
     rot = 90 * direction        # frente = -Z: topo da roda vai para a frente
