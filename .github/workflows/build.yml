@@ -1,0 +1,37 @@
+name: Build
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 25
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Build
+        run: ./gradlew build --stacktrace
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Modelo 3D gerado está em dia
+        run: |
+          pip install --quiet pillow
+          python3 design/model/gen_landship.py
+          git diff --exit-code -- 'design/model/*.json'
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: vapor-trilhos-jar
+          path: build/libs/*.jar
+          if-no-files-found: error
