@@ -1,0 +1,614 @@
+{
+ "format_version": "1.8.0",
+ "animations": {
+  "animation.landship.track_left.forward": {
+   "loop": true,
+   "animation_length": 0.5,
+   "bones": {
+    "wheel_left_0": {
+     "rotation": {
+      "0.0": [
+       0,
+       0,
+       0
+      ],
+      "0.5": [
+       90,
+       0,
+       0
+      ]
+     }
+    },
+    "wheel_left_1": {
+     "rotation": {
+      "0.0": [
+       0,
+       0,
+       0
+      ],
+      "0.5": [
+       90,
+       0,
+       0
+      ]
+     }
+    },
+    "wheel_left_2": {
+     "rotation": {
+      "0.0": [
+       0,
+       0,
+       0
+      ],
+      "0.5": [
+       90,
+       0,
+       0
+      ]
+     }
+    },
+    "wheel_left_3": {
+     "rotation": {
+      "0.0": [
+       0,
+       0,
+       0
+      ],
+      "0.5": [
+       90,
+       0,
+       0
+      ]
+     }
+    },
+    "tread_left_top": {
+     "position": {
+      "0.0": [
+       0,
+       0,
+       0
+      ],
+      "0.5": [
+       0,
+       0,
+       -8
+      ]
+     }
+    },
+    "tread_left_bottom": {
+     "position": {
+      "0.0": [
+       0,
+       0,
+       0
+      ],
+      "0.5": [
+       0,
+       0,
+       8
+      ]
+     }
+    }
+   }
+  },
+  "animation.landship.track_left.reverse": {
+   "loop": true,
+   "animation_length": 0.5,
+   "bones": {
+    "wheel_left_0": {
+     "rotation": {
+      "0.0": [
+       0,
+       0,
+       0
+      ],
+      "0.5": [
+       -90,
+       0,
+       0
+      ]
+     }
+    },
+    "wheel_left_1": {
+     "rotation": {
+      "0.0": [
+       0,
+       0,
+       0
+      ],
+      "0.5": [
+       -90,
+       0,
+       0
+      ]
+     }
+    },
+    "wheel_left_2": {
+     "rotation": {
+      "0.0": [
+       0,
+       0,
+       0
+      ],
+      "0.5": [
+       -90,
+       0,
+       0
+      ]
+     }
+    },
+    "wheel_left_3": {
+     "rotation": {
+      "0.0": [
+       0,
+       0,
+       0
+      ],
+      "0.5": [
+       -90,
+       0,
+       0
+      ]
+     }
+    },
+    "tread_left_top": {
+     "position": {
+      "0.0": [
+       0,
+       0,
+       0
+      ],
+      "0.5": [
+       0,
+       0,
+       8
+      ]
+     }
+    },
+    "tread_left_bottom": {
+     "position": {
+      "0.0": [
+       0,
+       0,
+       0
+      ],
+      "0.5": [
+       0,
+       0,
+       -8
+      ]
+     }
+    }
+   }
+  },
+  "animation.landship.track_right.forward": {
+   "loop": true,
+   "animation_length": 0.5,
+   "bones": {
+    "wheel_right_0": {
+     "rotation": {
+      "0.0": [
+       0,
+       0,
+       0
+      ],
+      "0.5": [
+       90,
+       0,
+       0
+      ]
+     }
+    },
+    "wheel_right_1": {
+     "rotation": {
+      "0.0": [
+       0,
+       0,
+       0
+      ],
+      "0.5": [
+       90,
+       0,
+       0
+      ]
+     }
+    },
+    "wheel_right_2": {
+     "rotation": {
+      "0.0": [
+       0,
+       0,
+       0
+      ],
+      "0.5": [
+       90,
+       0,
+       0
+      ]
+     }
+    },
+    "wheel_right_3": {
+     "rotation": {
+      "0.0": [
+       0,
+       0,
+       0
+      ],
+      "0.5": [
+       90,
+       0,
+       0
+      ]
+     }
+    },
+    "tread_right_top": {
+     "position": {
+      "0.0": [
+       0,
+       0,
+       0
+      ],
+      "0.5": [
+       0,
+       0,
+       -8
+      ]
+     }
+    },
+    "tread_right_bottom": {
+     "position": {
+      "0.0": [
+       0,
+       0,
+       0
+      ],
+      "0.5": [
+       0,
+       0,
+       8
+      ]
+     }
+    }
+   }
+  },
+  "animation.landship.track_right.reverse": {
+   "loop": true,
+   "animation_length": 0.5,
+   "bones": {
+    "wheel_right_0": {
+     "rotation": {
+      "0.0": [
+       0,
+       0,
+       0
+      ],
+      "0.5": [
+       -90,
+       0,
+       0
+      ]
+     }
+    },
+    "wheel_right_1": {
+     "rotation": {
+      "0.0": [
+       0,
+       0,
+       0
+      ],
+      "0.5": [
+       -90,
+       0,
+       0
+      ]
+     }
+    },
+    "wheel_right_2": {
+     "rotation": {
+      "0.0": [
+       0,
+       0,
+       0
+      ],
+      "0.5": [
+       -90,
+       0,
+       0
+      ]
+     }
+    },
+    "wheel_right_3": {
+     "rotation": {
+      "0.0": [
+       0,
+       0,
+       0
+      ],
+      "0.5": [
+       -90,
+       0,
+       0
+      ]
+     }
+    },
+    "tread_right_top": {
+     "position": {
+      "0.0": [
+       0,
+       0,
+       0
+      ],
+      "0.5": [
+       0,
+       0,
+       8
+      ]
+     }
+    },
+    "tread_right_bottom": {
+     "position": {
+      "0.0": [
+       0,
+       0,
+       0
+      ],
+      "0.5": [
+       0,
+       0,
+       -8
+      ]
+     }
+    }
+   }
+  },
+  "animation.landship.engine.idle": {
+   "loop": true,
+   "animation_length": 1.0,
+   "bones": {
+    "piston_left": {
+     "position": {
+      "0.0": [
+       0,
+       0,
+       0
+      ],
+      "0.5": [
+       0,
+       1.0,
+       0
+      ],
+      "1.0": [
+       0,
+       0,
+       0
+      ]
+     }
+    },
+    "piston_right": {
+     "position": {
+      "0.0": [
+       0,
+       1.0,
+       0
+      ],
+      "0.5": [
+       0,
+       0,
+       0
+      ],
+      "1.0": [
+       0,
+       1.0,
+       0
+      ]
+     }
+    },
+    "body": {
+     "position": {
+      "0.0": [
+       0,
+       0,
+       0
+      ],
+      "0.25": [
+       0,
+       0.05,
+       0
+      ],
+      "0.5": [
+       0,
+       0,
+       0
+      ],
+      "0.75": [
+       0,
+       0.05,
+       0
+      ],
+      "1.0": [
+       0,
+       0,
+       0
+      ]
+     }
+    }
+   }
+  },
+  "animation.landship.engine.working": {
+   "loop": true,
+   "animation_length": 0.4,
+   "bones": {
+    "piston_left": {
+     "position": {
+      "0.0": [
+       0,
+       0,
+       0
+      ],
+      "0.2": [
+       0,
+       2.0,
+       0
+      ],
+      "0.4": [
+       0,
+       0,
+       0
+      ]
+     }
+    },
+    "piston_right": {
+     "position": {
+      "0.0": [
+       0,
+       2.0,
+       0
+      ],
+      "0.2": [
+       0,
+       0,
+       0
+      ],
+      "0.4": [
+       0,
+       2.0,
+       0
+      ]
+     }
+    },
+    "body": {
+     "position": {
+      "0.0": [
+       0,
+       0,
+       0
+      ],
+      "0.1": [
+       0,
+       0.12,
+       0
+      ],
+      "0.2": [
+       0,
+       0,
+       0
+      ],
+      "0.30000000000000004": [
+       0,
+       0.12,
+       0
+      ],
+      "0.4": [
+       0,
+       0,
+       0
+      ]
+     }
+    }
+   }
+  },
+  "animation.landship.compactor.roll": {
+   "loop": true,
+   "animation_length": 0.5,
+   "bones": {
+    "roller": {
+     "rotation": {
+      "0.0": [
+       0,
+       0,
+       0
+      ],
+      "0.5": [
+       90,
+       0,
+       0
+      ]
+     }
+    }
+   }
+  },
+  "animation.landship.boiler.vent": {
+   "animation_length": 1.0,
+   "bones": {
+    "boiler": {
+     "position": {
+      "0.0": [
+       0,
+       0,
+       0
+      ],
+      "0.05": [
+       0.3,
+       0,
+       0
+      ],
+      "0.1": [
+       -0.3,
+       0,
+       0
+      ],
+      "0.15": [
+       0.3,
+       0,
+       0
+      ],
+      "0.2": [
+       -0.3,
+       0,
+       0
+      ],
+      "0.25": [
+       0,
+       0,
+       0
+      ]
+     }
+    },
+    "whistle": {
+     "scale": {
+      "0.0": [
+       1,
+       1,
+       1
+      ],
+      "0.1": [
+       1.3,
+       1.3,
+       1.3
+      ],
+      "0.6": [
+       1.3,
+       1.3,
+       1.3
+      ],
+      "1.0": [
+       1,
+       1,
+       1
+      ]
+     }
+    }
+   }
+  },
+  "animation.landship.firebox.open": {
+   "animation_length": 0.4,
+   "loop": "hold_on_last_frame",
+   "bones": {
+    "firebox_door": {
+     "rotation": {
+      "0.0": [
+       0,
+       0,
+       0
+      ],
+      "0.4": [
+       0,
+       -100,
+       0
+      ]
+     }
+    }
+   }
+  }
+ }
+}

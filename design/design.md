@@ -38,6 +38,14 @@ consertar o desgaste → expandir com módulos**. A logística de água é o gar
 | Flutua? | **Não.** Afunda em água funda; ver A3.6 |
 | Encaixes de módulo | 6 gerais + 1 frontal (só compactador) |
 
+### A2.0 Visual
+
+Fonte do modelo: `design/model/` (geometria Bedrock, a mesma que o GeckoLib e o Bedrock usam).
+Cabine aberta com teto de cobre na frente, bancos no meio, caldeira verde com cintas de cobre e
+chaminé atrás, dois cilindros verticais com pistões entre bancos e caldeira, esteiras com rodas
+de apoio visíveis. Os 6 encaixes de módulo ficam nas laterais do deque (células 3×3); o
+compactador é um rolo à frente. Altura visual até o topo da chaminé: 3,4 blocos.
+
 ### A2.1 Controles (padrão; todos reconfiguráveis)
 
 | Ação | Tecla padrão | Efeito |
@@ -348,6 +356,7 @@ Camada 1 (sobre a camada 0):
 | Fabric API | **0.162.0+26.3** (mais recente para 26.3) | maven.fabricmc.net |
 | Fabric Loom | **1.18.3** (plugin `net.fabricmc.fabric-loom`) | maven.fabricmc.net |
 | Gradle | **9.7.1** (wrapper do mod-exemplo oficial) | FabricMC/fabric-example-mod |
+| GeckoLib | **5.5.7** para Fabric 26.3 (única dependência além da Fabric API — escolha do usuário) | Modrinth / bernie-g/geckolib |
 | Mappings | **nenhum** — desde a 26.1 o jogo vem sem ofuscação; usamos os nomes oficiais da Mojang direto, sem Yarn/Intermediary e sem remapeamento | ausência de `client_mappings` no manifest; `intermediary`/`yarn` sem versões 26.x |
 
 Verificado na prática: o `fabric-example-mod` compila com essa combinação (JDK 25 instalado via
@@ -458,7 +467,21 @@ Desmontagem: verifica espaço livre para todos os blocos antes de mexer em qualq
 
 - **Data generation** (Fabric Data Generation API) para receitas, tags, loot tables, modelos e
   os dois arquivos de idioma (`en_us`, `pt_br`) — o CI garante que nada fica faltando.
-- Texturas/modelos placeholder (PNG gerados, modelo da entidade em código).
+- **Modelo da entidade com GeckoLib 5** (decisão do usuário): `landship.geo.json` +
+  `landship.animation.json` + `landship.png` + `landship_glowmask.png`, gerados por
+  `design/model/gen_landship.py` e copiados para `assets/vapor_trilhos/geckolib/models/entity/`,
+  `.../geckolib/animations/entity/` e `textures/entity/`. Todos abrem no Blockbench.
+  - Ossos que o código controla: `slot_*_{bed,cargo,furnace}` e `slot_front_compactor`
+    (visibilidade conforme os módulos instalados), `gauge_needle` (pressão), `helm` (direção),
+    `body` (arfagem/rolagem do terreno).
+  - Animações por controlador independente: `track_left.*` e `track_right.*` (cada esteira
+    anda para frente/ré, então girar no lugar = uma esteira em cada sentido), `engine.idle` /
+    `engine.working`, `compactor.roll`, `boiler.vent`, `firebox.open`. A velocidade das
+    animações acompanha a velocidade real.
+  - Locators para partículas: `smoke` (chaminé), `steam_vent` (válvula), `firebox_front`,
+    `seat_*` (referência dos assentos).
+  - `landship_glowmask.png` faz a fornalha e a lanterna brilharem (camada automática do GeckoLib).
+- Texturas de itens e blocos: PNGs placeholder gerados.
 - Sons: `sounds.json` com eventos próprios (`vapor_trilhos:boiler.hiss`, `.whistle`, `.vent`,
   `.engine`) apontando para áudios vanilla existentes — funcionais sem empacotar `.ogg`.
 
@@ -491,6 +514,15 @@ client/ (source set separado)
 ├── screen/  (telas)
 └── hud/
 ```
+
+### B3.11 Referências estudadas (somente leitura; nosso código é original)
+
+| Projeto | O que aproveitamos como ideia |
+|---|---|
+| Immersive Aircraft (branch 26.2, GPL-3.0) | Confirma a arquitetura: herda de `VehicleEntity` vanilla, `InterpolationHandler`, `isLocalInstanceAuthoritative`, `ValueInput/ValueOutput`; inventário com espaços tipados (combustível, melhorias, carga). Ele usa ~20 mixins (caixas de colisão extras, câmera, controles); nós evitamos isso com a pegada quadrada única. |
+| Immersive Machinery (1.21.1, GPL-3.0) | A escavadora de túnel quebra blocos numa faixa 3 de largura à frente usando os vetores frente/direita/cima do veículo e um "orçamento" de quebra por tick: mesmo padrão do nosso compactador. Ele é construído sobre o Immersive Aircraft como biblioteca. |
+
+O Immersive Aircraft **não** pode ser dependência: não existe versão para 26.3 (vai até 26.2).
 
 ## B4. Plano de entregas
 
