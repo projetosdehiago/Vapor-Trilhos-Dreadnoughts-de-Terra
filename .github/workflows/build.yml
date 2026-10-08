@@ -28,7 +28,7 @@ jobs:
         run: |
           pip install --quiet pillow
           python3 design/model/gen_landship.py
-          git diff --exit-code -- 'design/model/*.json'
+          git diff --exit-code -- 'design/model/*.json' 'src/main/resources/assets/vapor_trilhos/geckolib'
 
       - uses: actions/upload-artifact@v4
         with:

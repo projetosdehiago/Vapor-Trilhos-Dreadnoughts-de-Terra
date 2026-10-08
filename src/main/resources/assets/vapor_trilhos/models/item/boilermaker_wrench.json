@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/handheld",
+  "textures": {
+    "layer0": "vapor_trilhos:item/boilermaker_wrench"
+  }
+}

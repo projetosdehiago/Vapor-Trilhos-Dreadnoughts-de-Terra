@@ -1,0 +1,96 @@
+{
+  "boiler.ignite": {
+    "subtitle": "subtitles.vapor_trilhos.boiler.ignite",
+    "sounds": [
+      {
+        "name": "minecraft:fire/ignite"
+      }
+    ]
+  },
+  "boiler.hiss": {
+    "subtitle": "subtitles.vapor_trilhos.boiler.hiss",
+    "sounds": [
+      {
+        "name": "minecraft:random/fizz",
+        "pitch": 0.7
+      }
+    ]
+  },
+  "boiler.vent": {
+    "subtitle": "subtitles.vapor_trilhos.boiler.vent",
+    "sounds": [
+      {
+        "name": "minecraft:random/fizz",
+        "pitch": 0.5
+      },
+      {
+        "name": "minecraft:random/fizz",
+        "pitch": 0.6
+      }
+    ]
+  },
+  "boiler.shock": {
+    "subtitle": "subtitles.vapor_trilhos.boiler.shock",
+    "sounds": [
+      {
+        "name": "minecraft:random/explode1",
+        "pitch": 1.4,
+        "volume": 0.7
+      },
+      {
+        "name": "minecraft:random/explode2",
+        "pitch": 1.4,
+        "volume": 0.7
+      }
+    ]
+  },
+  "boiler.fill": {
+    "subtitle": "subtitles.vapor_trilhos.boiler.fill",
+    "sounds": [
+      {
+        "name": "minecraft:item/bucket/empty1"
+      },
+      {
+        "name": "minecraft:item/bucket/empty2"
+      },
+      {
+        "name": "minecraft:item/bucket/empty3"
+      }
+    ]
+  },
+  "engine.chug": {
+    "subtitle": "subtitles.vapor_trilhos.engine.chug",
+    "sounds": [
+      {
+        "name": "minecraft:tile/piston/out",
+        "pitch": 0.6,
+        "volume": 0.5
+      }
+    ]
+  },
+  "whistle": {
+    "subtitle": "subtitles.vapor_trilhos.whistle",
+    "sounds": [
+      {
+        "name": "minecraft:item/goat_horn/call1",
+        "pitch": 1.3
+      }
+    ]
+  },
+  "repair": {
+    "subtitle": "subtitles.vapor_trilhos.repair",
+    "sounds": [
+      {
+        "name": "minecraft:random/anvil_use",
+        "pitch": 1.2,
+        "volume": 0.6
+      },
+      {
+        "name": "minecraft:block/smithing_table/smithing_table1"
+      },
+      {
+        "name": "minecraft:block/smithing_table/smithing_table2"
+      }
+    ]
+  }
+}

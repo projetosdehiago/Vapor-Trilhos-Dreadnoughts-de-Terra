@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "C": "minecraft:copper_ingot",
+    "B": "minecraft:bucket",
+    "X": "minecraft:furnace",
+    "I": "minecraft:iron_ingot"
+  },
+  "pattern": [
+    "CBC",
+    "IXI",
+    "III"
+  ],
+  "result": {
+    "id": "vapor_trilhos:steam_boiler"
+  }
+}
