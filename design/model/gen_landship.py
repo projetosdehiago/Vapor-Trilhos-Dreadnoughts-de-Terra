@@ -171,6 +171,8 @@ for side, sx in (("left", LEFT), ("right", -LEFT)):
         tc((17.3, WHEEL_Y - 1.5, zc - 3.5), (4.4, 3, 7), "dark_iron", b=wb,
            pivot=(19.5, WHEEL_Y, zc), rotation=(-45, 0, 0))
         tc((22.0, WHEEL_Y - 1, zc - 1), (0.5, 2, 2), "brass", b=wb)                   # cubo
+        tc((22.0, WHEEL_Y - 1, zc - 1), (0.4, 2, 2), "brass", b=wb,
+           pivot=(22.2, WHEEL_Y, zc), rotation=(45, 0, 0))
 
 # --- Cabine -------------------------------------------------------------------
 ROOF_Y = 43
@@ -291,18 +293,33 @@ for name, (cx, cz) in SLOTS.items():
     cube(b, (cx - 1.5, 31, cz - 1.5), (3, 7, 3), "soot")
     cube(b, (cx - 2, 38, cz - 2), (4, 1, 4), "dark_iron")
 
-# compactador frontal (encaixe da frente, fica fora da pegada)
+# compactador frontal (encaixe da frente, fica fora da pegada): rolo redondo entre dois braços
+ROLL_Y, ROLL_Z, ROLL_R = 4.5, -31.0, 4.5
 bone("slot_front", "body", pivot=(0, 6, -23))
 bone("slot_front_compactor", "slot_front", pivot=(0, 6, -23))
-cube("slot_front_compactor", (-20, 4, -31), (2, 3, 8), "iron_plate")
-cube("slot_front_compactor", (18, 4, -31), (2, 3, 8), "iron_plate")
-cube("slot_front_compactor", (-19.5, 7, -26), (39, 2, 2), "dark_iron")
-cube("slot_front_compactor", (-20.5, 11, -34.5), (41, 1, 7), {"*": "iron_plate", "up": "dark_iron"})  # para-lama
-for x in (-20.5, 19.5):
-    cube("slot_front_compactor", (x, 9, -29), (1, 2, 1), "dark_iron")                  # suportes do para-lama
-bone("roller", "slot_front_compactor", pivot=(0, 4.5, -31))
-cube("roller", (-21, 0, -35.5), (42, 9, 9), {"*": "tread_v", "east": "brass", "west": "brass"})
-cube("roller", (-20.5, 0, -35.5), (41, 9, 9), "tread_v", pivot=(0, 4.5, -31), rotation=(45, 0, 0))
+cube("slot_front_compactor", (-22.5, 7, -25), (45, 2, 2), "dark_iron")                 # travessa
+for sx in (-1, 1):
+    def fc(origin, size, mat):
+        if sx < 0:
+            origin, size = mirror_x(origin, size)
+        cube("slot_front_compactor", origin, size, mat)
+    fc((21.4, 3.5, -31.5), (1.6, 3, 8.5), "iron_plate")                                  # braço até o eixo
+    fc((21.4, 6.5, -24), (1.6, 0.5, 1), "dark_iron")                                     # junta com a travessa
+    fc((21.6, 6.5, -30.5), (1.2, 5, 1), "dark_iron")                                     # suporte do para-lama
+cube("slot_front_compactor", (-23, 11.5, -35.5), (46, 1, 9), {"*": "iron_plate", "up": "dark_iron"})  # para-lama
+bone("roller", "slot_front_compactor", pivot=(0, ROLL_Y, ROLL_Z))
+# tambor octogonal (4 barras, larguras diferentes para não cintilar), raio ≈ 4,7
+for i, (half_w, rot) in enumerate(((20.0, 0), (19.9, 0), (19.8, 45), (19.7, -45))):
+    tall = i == 0
+    h, d = (2 * ROLL_R, 3.8) if tall else (3.8, 2 * ROLL_R)
+    cube("roller", (-half_w, ROLL_Y - h / 2, ROLL_Z - d / 2), (2 * half_w, h, d), "tread_v",
+         pivot=(0, ROLL_Y, ROLL_Z) if rot else None, rotation=(rot, 0, 0) if rot else None)
+for sx in (-1, 1):                                                                      # tampas e eixo
+    x0 = 20.0 if sx > 0 else -21.0
+    cube("roller", (x0, ROLL_Y - 3.5, ROLL_Z - 1.5), (1.0, 7, 3), "dark_iron")
+    cube("roller", (x0 + 0.05, ROLL_Y - 1.5, ROLL_Z - 3.5), (0.9, 3, 7), "dark_iron")
+    hx = 21.0 if sx > 0 else -21.4
+    cube("roller", (hx, ROLL_Y - 1, ROLL_Z - 1), (0.4, 2, 2), "brass")
 
 # locais dos assentos (usados como referência pelo código)
 bone("seats", "body", pivot=(0, 21, 0),
