@@ -1,0 +1,32 @@
+# Gradle
+.gradle/
+build/
+out/
+classes/
+!gradle/wrapper/gradle-wrapper.jar
+
+# Minecraft (ambiente de desenvolvimento)
+run/
+logs/
+crash-reports/
+remappedSrc/
+
+# IDEs
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+.settings/
+.project
+.classpath
+bin/
+.eclipse/
+
+# Sistema
+.DS_Store
+Thumbs.db
+
+# Python (gerador do modelo)
+__pycache__/
+*.pyc

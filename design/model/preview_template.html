@@ -1,0 +1,467 @@
+<title>Landship Mk I</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IM+Fell+English+SC&family=Source+Sans+3:wght@400;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: oficina — o veículo ocupa a bancada (canvas), a ficha técnica fica à direita (abaixo no celular) */
+:root {
+  --bg: #e8ebec;
+  --surface: #f6f7f7;
+  --fg: #1d2326;
+  --muted: #5b666b;
+  --line: #c9cfd1;
+  --accent: #a85a2a;
+  --accent-fg: #ffffff;
+  --scene: #cfd6d8;
+  --ground: #8fa07a;
+  --font-display: "IM Fell English SC", Georgia, serif;
+  --font-body: "Source Sans 3", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #14171a; --surface: #1c2024; --fg: #e4e0d7; --muted: #9aa3a7; --line: #2e3439;
+    --accent: #d98a4e; --accent-fg: #14171a; --scene: #22282c; --ground: #4b5a3f; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #14171a; --surface: #1c2024; --fg: #e4e0d7; --muted: #9aa3a7; --line: #2e3439;
+  --accent: #d98a4e; --accent-fg: #14171a; --scene: #22282c; --ground: #4b5a3f; color-scheme: dark;
+}
+html, body { height: 100%; }
+body { background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 15px; line-height: 1.5; }
+.app { height: 100%; display: grid; grid-template-columns: minmax(0, 1fr) 320px; }
+.stage { position: relative; min-width: 0; min-height: 0; background: var(--scene); }
+#view { width: 100%; height: 100%; display: block; touch-action: none; }
+.stage-hint { position: absolute; left: 16px; bottom: 12px; font: 12px var(--font-mono); color: var(--muted); pointer-events: none; }
+.stage-title { position: absolute; left: 16px; top: 12px; pointer-events: none; }
+.stage-title h1 { margin: 0; font-family: var(--font-display); font-weight: 400; font-size: 30px; line-height: 1.1; text-wrap: balance; }
+.stage-title p { margin: 2px 0 0; color: var(--muted); font-size: 13px; }
+aside { background: var(--surface); border-left: 1px solid var(--line); overflow-y: auto; padding-block: 18px; padding-inline: 18px; display: flex; flex-direction: column; gap: 20px; min-width: 0; }
+section { display: flex; flex-direction: column; gap: 8px; }
+h2 { margin: 0; font-family: var(--font-display); font-weight: 400; font-size: 19px; }
+.label { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.seg { display: flex; flex-wrap: wrap; gap: 6px; }
+.seg button, .btn { font: 500 13px var(--font-body); padding: 6px 11px; border-radius: 4px; border: 1px solid var(--line); background: transparent; color: var(--fg); cursor: pointer; }
+.seg button[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-fg); }
+.seg button:focus-visible, .btn:focus-visible, select:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.deck { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+.deck .cell { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.deck .fixed { border: 1px dashed var(--line); border-radius: 4px; padding: 6px; font-size: 12px; color: var(--muted); text-align: center; display: flex; align-items: center; justify-content: center; min-height: 38px; }
+.deck select { width: 100%; font: 13px var(--font-body); padding: 5px 4px; border-radius: 4px; border: 1px solid var(--line); background: var(--bg); color: var(--fg); }
+.deck .cap { font: 10px var(--font-mono); color: var(--muted); }
+.front { display: flex; align-items: center; gap: 8px; font-size: 14px; }
+.front input { accent-color: var(--accent); width: 16px; height: 16px; }
+dl { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; font-size: 13px; }
+dt { color: var(--muted); }
+dd { margin: 0; font-family: var(--font-mono); font-variant-numeric: tabular-nums; text-align: right; }
+.gauge { display: grid; grid-template-columns: auto 1fr auto; gap: 8px; align-items: center; font: 12px var(--font-mono); font-variant-numeric: tabular-nums; }
+.gauge input { accent-color: var(--accent); width: 100%; }
+.note { font-size: 13px; color: var(--muted); margin: 0; }
+code { font-family: var(--font-mono); font-size: 12px; }
+@media (max-width: 760px) {
+  .app { grid-template-columns: 1fr; grid-template-rows: 58vh auto; height: auto; }
+  html, body { height: auto; }
+  aside { border-left: 0; border-top: 1px solid var(--line); }
+  .stage-title h1 { font-size: 24px; }
+}
+</style>
+
+<div class="app">
+  <div class="stage">
+    <canvas id="view" aria-label="Modelo 3D do landship"></canvas>
+    <div class="stage-title">
+      <h1>Landship Mk I</h1>
+      <p>Vapor &amp; Trilhos · modelo placeholder para o GeckoLib</p>
+    </div>
+    <div class="stage-hint">arraste para girar · roda/pinça para zoom · botão direito para mover</div>
+  </div>
+
+  <aside>
+    <section aria-labelledby="h-mov">
+      <h2 id="h-mov">Movimento</h2>
+      <div class="seg" role="group" aria-label="Movimento">
+        <button id="m-stop" data-move="stop">Parado</button>
+        <button id="m-fwd" data-move="fwd" aria-pressed="true">Frente</button>
+        <button id="m-rev" data-move="rev">Ré</button>
+        <button id="m-left" data-move="left">Girar ←</button>
+        <button id="m-right" data-move="right">Girar →</button>
+      </div>
+      <div class="gauge">
+        <label for="pressure">Pressão</label>
+        <input id="pressure" type="range" min="0" max="12" step="0.1" value="6.5">
+        <output id="pressure-out" for="pressure">6,5 bar</output>
+      </div>
+      <div class="seg">
+        <button class="btn" id="vent">Válvula de alívio (V)</button>
+        <button class="btn" id="firebox">Abrir fornalha</button>
+      </div>
+    </section>
+
+    <section aria-labelledby="h-mod">
+      <h2 id="h-mod">Módulos no deque</h2>
+      <span class="label">frente ↑</span>
+      <div class="deck" id="deck"></div>
+      <label class="front"><input id="compactor" type="checkbox" checked> Compactador frontal</label>
+    </section>
+
+    <section aria-labelledby="h-spec">
+      <h2 id="h-spec">Ficha técnica</h2>
+      <dl>
+        <dt>Pegada</dt><dd>2,9 × 2,9 blocos</dd>
+        <dt>Casco (colisão)</dt><dd>2,0 blocos</dd>
+        <dt>Até o topo da chaminé</dt><dd>3,4 blocos</dd>
+        <dt>Ossos (bones)</dt><dd id="s-bones">–</dd>
+        <dt>Cubos</dt><dd id="s-cubes">–</dd>
+        <dt>Textura</dt><dd>256 × 256 px</dd>
+        <dt>Animações</dt><dd id="s-anims">–</dd>
+      </dl>
+      <p class="note">A figura ao lado tem a altura de um jogador (1,8 bloco). Cada quadrado do chão é um bloco.</p>
+      <p class="note">Arquivos no repositório: <code>design/model/</code>. Abra o <code>landship.geo.json</code> no Blockbench (formato Bedrock / GeckoLib).</p>
+    </section>
+  </aside>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script>
+const GEO = __GEO__;
+const ANIM = __ANIM__;
+const TEX_URI = "__TEX__";
+const GLOW_URI = "__GLOW__";
+
+const PX = 1 / 16; // 16 px = 1 bloco
+const D2R = Math.PI / 180;
+const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+
+// ---------- cena ----------
+const canvas = document.getElementById("view");
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, preserveDrawingBuffer: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(40, 1, 0.1, 200);
+camera.position.set(5.2, 3.6, -6.2);
+const controls = new THREE.OrbitControls(camera, canvas);
+controls.target.set(0, 1.2, 0);
+controls.enableDamping = true;
+controls.minDistance = 3; controls.maxDistance = 25;
+controls.maxPolarAngle = Math.PI * 0.49;
+
+scene.add(new THREE.HemisphereLight(0xffffff, 0x6b6157, 0.75));
+const sun = new THREE.DirectionalLight(0xfff2dd, 0.75);
+sun.position.set(-4, 8, -3);
+scene.add(sun);
+
+// chão em grade de blocos
+const groundMat = new THREE.MeshLambertMaterial({ color: 0x8fa07a });
+const ground = new THREE.Mesh(new THREE.PlaneGeometry(40, 40), groundMat);
+ground.rotation.x = -Math.PI / 2;
+scene.add(ground);
+const grid = new THREE.GridHelper(40, 40, 0x000000, 0x000000);
+grid.material.opacity = 0.12; grid.material.transparent = true; grid.position.y = 0.002;
+scene.add(grid);
+
+// figura de referência (1,8 bloco)
+const figure = new THREE.Group();
+const figMat = new THREE.MeshLambertMaterial({ color: 0x3d6e9e });
+const skin = new THREE.MeshLambertMaterial({ color: 0xc69c7a });
+const legs = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.75, 0.25), new THREE.MeshLambertMaterial({ color: 0x3a3f7a }));
+legs.position.y = 0.375;
+const torso = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.75, 0.25), figMat); torso.position.y = 1.125;
+const head = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.5, 0.5), skin); head.position.y = 1.55;
+figure.add(legs, torso, head);
+figure.position.set(2.7, 0, 1.6);
+scene.add(figure);
+
+// ---------- texturas ----------
+const loader = new THREE.TextureLoader();
+function tex(uri) {
+  const t = loader.load(uri);
+  t.magFilter = THREE.NearestFilter; t.minFilter = THREE.NearestFilter;
+  return t;
+}
+const material = new THREE.MeshLambertMaterial({
+  map: tex(TEX_URI), emissiveMap: tex(GLOW_URI), emissive: new THREE.Color(0xffffff),
+  alphaTest: 0.1, side: THREE.FrontSide,
+});
+
+// ---------- leitura da geometria Bedrock (mesmas conversões do Blockbench: X espelhado, ordem ZYX) ----------
+const desc = GEO["minecraft:geometry"][0];
+const TW = desc.description.texture_width, TH = desc.description.texture_height;
+const bones = {};
+const restRot = {};
+const flipVec = v => new THREE.Vector3(-v[0] * PX, v[1] * PX, v[2] * PX);
+const setRot = (obj, r) => obj.rotation.set(-r[0] * D2R, -r[1] * D2R, r[2] * D2R, "ZYX");
+
+function boxGeometry(c) {
+  const [ox, oy, oz] = c.origin, [sx, sy, sz] = c.size;
+  const x0 = -(ox + sx) * PX, x1 = -ox * PX, y0 = oy * PX, y1 = (oy + sy) * PX, z0 = oz * PX, z1 = (oz + sz) * PX;
+  // cantos vistos de fora: [TL, TR, BL, BR]
+  const faces = {
+    north: [[x1, y1, z0], [x0, y1, z0], [x1, y0, z0], [x0, y0, z0]],
+    south: [[x0, y1, z1], [x1, y1, z1], [x0, y0, z1], [x1, y0, z1]],
+    east:  [[x0, y1, z0], [x0, y1, z1], [x0, y0, z0], [x0, y0, z1]],
+    west:  [[x1, y1, z1], [x1, y1, z0], [x1, y0, z1], [x1, y0, z0]],
+    up:    [[x0, y1, z0], [x1, y1, z0], [x0, y1, z1], [x1, y1, z1]],
+    down:  [[x0, y0, z1], [x1, y0, z1], [x0, y0, z0], [x1, y0, z0]],
+  };
+  const pos = [], uv = [], idx = [];
+  for (const [name, q] of Object.entries(faces)) {
+    const f = c.uv[name]; if (!f) continue;
+    const [u, v] = f.uv, [w, h] = f.uv_size;
+    const uvs = [[u, v], [u + w, v], [u, v + h], [u + w, v + h]];
+    const base = pos.length / 3;
+    q.forEach((p, i) => { pos.push(...p); uv.push(uvs[i][0] / TW, 1 - uvs[i][1] / TH); });
+    idx.push(base, base + 2, base + 1, base + 1, base + 2, base + 3);
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3));
+  g.setAttribute("uv", new THREE.Float32BufferAttribute(uv, 2));
+  g.setIndex(idx);
+  g.computeVertexNormals();
+  return g;
+}
+
+const root = new THREE.Group();
+scene.add(root);
+const pivotOf = {};
+let cubeCount = 0;
+for (const b of desc.bones) {
+  const g = new THREE.Group();
+  g.name = b.name;
+  const pivot = flipVec(b.pivot || [0, 0, 0]);
+  pivotOf[b.name] = pivot;
+  const parentPivot = b.parent ? pivotOf[b.parent] : new THREE.Vector3();
+  g.position.copy(pivot).sub(parentPivot);
+  g.userData.rest = g.position.clone();
+  restRot[b.name] = b.rotation || [0, 0, 0];
+  setRot(g, restRot[b.name]);
+  (b.parent ? bones[b.parent] : root).add(g);
+  bones[b.name] = g;
+  for (const c of b.cubes || []) {
+    cubeCount++;
+    const mesh = new THREE.Mesh(boxGeometry(c), material);
+    if (c.rotation) {
+      const cp = flipVec(c.pivot);
+      const holder = new THREE.Group();
+      holder.position.copy(cp).sub(pivot);
+      setRot(holder, c.rotation);
+      mesh.position.copy(cp).negate();
+      holder.add(mesh);
+      g.add(holder);
+    } else {
+      mesh.position.copy(pivot).negate();
+      g.add(mesh);
+    }
+  }
+}
+document.getElementById("s-bones").textContent = desc.bones.length;
+document.getElementById("s-cubes").textContent = cubeCount;
+document.getElementById("s-anims").textContent = Object.keys(ANIM.animations).length;
+
+// ---------- módulos ----------
+const SLOTS = [["slot_fl", "Frente esq."], [null, "Leme"], ["slot_fr", "Frente dir."],
+               ["slot_ml", "Meio esq."], [null, "Bancos"], ["slot_mr", "Meio dir."],
+               ["slot_rl", "Trás esq."], [null, "Caldeira"], ["slot_rr", "Trás dir."]];
+const KINDS = [["", "vazio"], ["cargo", "Baú"], ["bed", "Cama"], ["furnace", "Fornalha"]];
+const preset = { slot_fl: "cargo", slot_fr: "cargo", slot_ml: "bed", slot_mr: "furnace", slot_rl: "cargo", slot_rr: "" };
+const deck = document.getElementById("deck");
+function applySlot(slot, kind) {
+  for (const [k] of KINDS) if (k) bones[`${slot}_${k}`].visible = (k === kind);
+}
+for (const [slot, cap] of SLOTS) {
+  const cell = document.createElement("div");
+  cell.className = "cell";
+  if (!slot) {
+    cell.innerHTML = `<div class="fixed">${cap}</div>`;
+  } else {
+    const id = `sel-${slot}`;
+    cell.innerHTML = `<label class="cap" for="${id}">${cap}</label><select id="${id}">${KINDS.map(([k, n]) => `<option value="${k}">${n}</option>`).join("")}</select>`;
+    const sel = cell.querySelector("select");
+    sel.value = preset[slot];
+    sel.addEventListener("change", () => { applySlot(slot, sel.value); enforceLimits(); });
+    applySlot(slot, preset[slot]);
+  }
+  deck.appendChild(cell);
+}
+// limites do design: 1 cama, 1 fornalha, 4 baús
+function enforceLimits() {
+  const limits = { bed: 1, furnace: 1, cargo: 4 };
+  const used = { bed: 0, furnace: 0, cargo: 0 };
+  deck.querySelectorAll("select").forEach(s => { if (s.value) used[s.value]++; });
+  deck.querySelectorAll("select").forEach(s => {
+    s.querySelectorAll("option").forEach(o => {
+      if (!o.value) return;
+      o.disabled = o.value !== s.value && used[o.value] >= limits[o.value];
+    });
+  });
+}
+enforceLimits();
+const compactor = document.getElementById("compactor");
+compactor.addEventListener("change", () => { bones.slot_front_compactor.visible = compactor.checked; });
+
+// ---------- animações (interpolação linear de keyframes, como o GeckoLib em modo linear) ----------
+function sample(track, t) {
+  const keys = Object.keys(track).map(Number).sort((a, b) => a - b);
+  if (t <= keys[0]) return valueAt(track, keys[0]);
+  for (let i = 0; i < keys.length - 1; i++) {
+    if (t <= keys[i + 1]) {
+      const a = valueAt(track, keys[i]), b = valueAt(track, keys[i + 1]);
+      const k = (t - keys[i]) / (keys[i + 1] - keys[i]);
+      return a.map((v, j) => v + (b[j] - v) * k);
+    }
+  }
+  return valueAt(track, keys[keys.length - 1]);
+}
+function valueAt(track, key) {
+  for (const [k, v] of Object.entries(track)) if (Number(k) === key) return v;
+}
+const active = new Map(); // nome -> {start, speed, once}
+function play(name, speed = 1, once = false) { active.set(name, { start: clock, speed, once }); }
+function stop(name) { active.delete(name); }
+
+function applyAnimations() {
+  for (const [name, g] of Object.entries(bones)) {
+    g.position.copy(g.userData.rest);
+    setRot(g, restRot[name]);
+    g.scale.set(1, 1, 1);
+  }
+  for (const [name, st] of active) {
+    const a = ANIM.animations[name];
+    let t = (clock - st.start) * st.speed;
+    if (a.loop === true) t = t % a.animation_length;
+    else t = Math.min(t, a.animation_length);
+    for (const [bn, ch] of Object.entries(a.bones)) {
+      const g = bones[bn]; if (!g) continue;
+      if (ch.rotation) {
+        const r = sample(ch.rotation, t), rr = restRot[bn];
+        setRot(g, [rr[0] + r[0], rr[1] + r[1], rr[2] + r[2]]);
+      }
+      if (ch.position) {
+        const p = sample(ch.position, t);
+        g.position.set(g.userData.rest.x - p[0] * PX, g.userData.rest.y + p[1] * PX, g.userData.rest.z + p[2] * PX);
+      }
+      if (ch.scale) { const s = sample(ch.scale, t); g.scale.set(s[0], s[1], s[2]); }
+    }
+  }
+}
+
+// ---------- estado: movimento + pressão ----------
+let move = "fwd";
+let pressure = 6.5;
+const pressureEl = document.getElementById("pressure");
+const pressureOut = document.getElementById("pressure-out");
+pressureEl.addEventListener("input", () => {
+  pressure = Number(pressureEl.value);
+  pressureOut.textContent = pressure.toFixed(1).replace(".", ",") + " bar";
+  applyMove();
+});
+const power = () => Math.max(0, Math.min(1, (pressure - 2) / 6));
+
+function applyMove() {
+  for (const n of Object.keys(ANIM.animations)) if (/track_|engine\.|compactor/.test(n)) stop(n);
+  const p = power();
+  const moving = move !== "stop" && p > 0;
+  play(moving ? "animation.landship.engine.working" : "animation.landship.engine.idle", moving ? 0.6 + p : 1);
+  if (!moving) return;
+  const s = 0.4 + p;
+  const L = { fwd: "forward", rev: "reverse", left: "reverse", right: "forward" }[move];
+  const R = { fwd: "forward", rev: "reverse", left: "forward", right: "reverse" }[move];
+  play(`animation.landship.track_left.${L}`, s);
+  play(`animation.landship.track_right.${R}`, s);
+  if (move === "fwd") play("animation.landship.compactor.roll", s);
+}
+document.querySelectorAll("[data-move]").forEach(b => b.addEventListener("click", () => {
+  move = b.dataset.move;
+  document.querySelectorAll("[data-move]").forEach(x => x.setAttribute("aria-pressed", String(x === b)));
+  applyMove();
+}));
+document.getElementById("vent").addEventListener("click", () => { play("animation.landship.boiler.vent", 1, true); burst = 1.6; });
+let doorOpen = false;
+document.getElementById("firebox").addEventListener("click", e => {
+  doorOpen = !doorOpen;
+  e.currentTarget.textContent = doorOpen ? "Fechar fornalha" : "Abrir fornalha";
+  if (doorOpen) play("animation.landship.firebox.open", 1, true); else stop("animation.landship.firebox.open");
+});
+
+// ---------- fumaça e vapor (partículas simples) ----------
+const puffs = [];
+const puffGeo = new THREE.BoxGeometry(1, 1, 1);
+let burst = 0;
+const chimneyTop = new THREE.Vector3(0, 54 * PX, 19 * PX);
+const ventPos = new THREE.Vector3(-4 * PX, 35 * PX, 13 * PX);
+function spawnPuff(at, color, size, up) {
+  const m = new THREE.Mesh(puffGeo, new THREE.MeshLambertMaterial({ color, transparent: true, opacity: 0.85 }));
+  m.position.copy(at); m.scale.setScalar(size);
+  m.userData = { life: 0, up, drift: new THREE.Vector3((Math.random() - .5) * .4, 0, (Math.random() - .5) * .4) };
+  scene.add(m); puffs.push(m);
+}
+function updatePuffs(dt) {
+  const p = power();
+  if (Math.random() < dt * (2 + 6 * p)) {
+    const w = root.localToWorld(chimneyTop.clone());
+    spawnPuff(w, 0x5a5652, 0.18, 0.9);
+  }
+  if (burst > 0 || pressure >= 10) {
+    burst = Math.max(0, burst - dt);
+    for (let i = 0; i < 3; i++) {
+      const w = root.localToWorld(ventPos.clone());
+      spawnPuff(w, 0xf2f2f2, 0.25, 1.8);
+    }
+  }
+  for (let i = puffs.length - 1; i >= 0; i--) {
+    const m = puffs[i], d = m.userData;
+    d.life += dt;
+    m.position.y += d.up * dt;
+    m.position.addScaledVector(d.drift, dt);
+    m.scale.multiplyScalar(1 + dt * 0.9);
+    m.material.opacity = Math.max(0, 0.85 - d.life * 0.45);
+    if (d.life > 1.9) { scene.remove(m); m.material.dispose(); puffs.splice(i, 1); }
+  }
+}
+
+// ---------- tema ----------
+function applyTheme() {
+  scene.background = new THREE.Color(css("--scene") || "#cfd6d8");
+  groundMat.color = new THREE.Color(css("--ground") || "#8fa07a");
+}
+applyTheme();
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change", applyTheme);
+new MutationObserver(applyTheme).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+
+// ---------- laço ----------
+const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+let clock = 0, last = performance.now();
+let groundX = 0, groundZ = 0;
+function resize() {
+  const r = canvas.getBoundingClientRect();
+  renderer.setSize(r.width, r.height, false);
+  camera.aspect = r.width / Math.max(1, r.height);
+  camera.updateProjectionMatrix();
+}
+new ResizeObserver(resize).observe(canvas);
+resize();
+applyMove();
+
+function frame(now) {
+  const dt = Math.min(0.05, (now - last) / 1000); last = now;
+  clock += dt;
+  const p = power();
+  if (!reduce && move !== "stop" && p > 0) {
+    // o veículo fica parado no centro e o chão desliza por baixo
+    const v = (0.4 + p) * 1.6 * dt * (move === "fwd" ? 1 : move === "rev" ? -0.5 : 0);
+    if (move === "left") root.rotation.y += 0.6 * dt;
+    if (move === "right") root.rotation.y -= 0.6 * dt;
+    const a = root.rotation.y;
+    groundX += Math.sin(a) * v; groundZ += Math.cos(a) * v;
+    const wrap = n => ((n % 1) + 1) % 1;
+    grid.position.x = wrap(groundX); grid.position.z = wrap(groundZ);
+  }
+  applyAnimations();
+  bones.gauge_needle.rotation.z = (-pressure / 12) * Math.PI * 1.5 + Math.PI * 0.75;
+  updatePuffs(dt);
+  controls.update();
+  renderer.render(scene, camera);
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+</script>
