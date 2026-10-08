@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Gera o modelo 3D do landship (geometria Bedrock / GeckoLib), as animações e a textura.
 
-Saídas (no mesmo diretório deste script):
+Saídas (neste diretório e copiadas para src/main/resources/assets/vapor_trilhos/):
   landship.geo.json         geometria (abre no Blockbench: File > Open Model)
   landship.animation.json   animações (GeckoLib / Bedrock)
   landship.png              textura 256x256
@@ -672,9 +672,20 @@ for y, row in enumerate(dial):
         px[gx + x, gy + y] = pal[ch] + (255,)
 
 # ----------------------------------------------------------------------------
-(OUT / "landship.geo.json").write_text(json.dumps(geo, indent=1) + "\n")
-(OUT / "landship.animation.json").write_text(json.dumps(animations, indent=1) + "\n")
-img.save(OUT / "landship.png")
-glow.save(OUT / "landship_glowmask.png")
+# Saídas: design/model/ (fonte e Bedrock) e os assets do mod (GeckoLib)
+ASSETS = OUT.parent.parent / "src" / "main" / "resources" / "assets" / "vapor_trilhos"
+geo_text = json.dumps(geo, indent=1) + "\n"
+anim_text = json.dumps(animations, indent=1) + "\n"
+for directory, name, text in (
+        (OUT, "landship.geo.json", geo_text),
+        (OUT, "landship.animation.json", anim_text),
+        (ASSETS / "geckolib" / "models" / "entity", "landship.geo.json", geo_text),
+        (ASSETS / "geckolib" / "animations" / "entity", "landship.animation.json", anim_text)):
+    directory.mkdir(parents=True, exist_ok=True)
+    (directory / name).write_text(text)
+for directory in (OUT, ASSETS / "textures" / "entity"):
+    directory.mkdir(parents=True, exist_ok=True)
+    img.save(directory / "landship.png")
+    glow.save(directory / "landship_glowmask.png")
 n_cubes = sum(len(b.get("cubes", [])) for b in bones)
 print(f"{len(bones)} bones, {n_cubes} cubes -> {OUT}")

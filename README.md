@@ -5,9 +5,39 @@ veículos terrestres pesados — *landships* — sobre esteiras de madeira refor
 movidos por uma caldeira a vapor. É como os barcos grandes do jogo, mas para terra, e
 personalizável com módulos (cama, baús de carga, fornalha de alta temperatura e compactador).
 
-> **Status:** em desenvolvimento (Fase 0 — estrutura do projeto). Ainda não há conteúdo jogável.
+> **Status:** em desenvolvimento. Fase 1 (núcleo) pronta: o landship anda, a caldeira funciona,
+> solta vapor e se desgasta. Módulos (Fase 2) e montagem com blocos (Fase 3) vêm depois.
 > O plano completo, as regras de jogo e os valores de balanceamento estão em
 > [`design/design.md`](design/design.md).
+
+## Como jogar (Fase 1)
+
+1. **Fabrique** (receitas no livro de receitas ou em `design/design.md`):
+   Esteira Reforçada ×2 → Caldeira a Vapor → **Landship (Cabine Básica)**.
+2. **Coloque** o landship no chão (clique direito com o item).
+3. **Abasteça:** clique direito no landship com balde ou garrafa d'água (tanque de 8 baldes) e
+   com carvão, madeira ou outro combustível.
+4. **Acenda** com isqueiro (pederneira) ou carga de fogo, ou pelo botão do painel.
+5. Espere ~20 s para ferver e mais ~10 s até **2 bar**. Clique direito para **embarcar**.
+6. **Dirija** com W/S e gire com A/D (as esteiras giram no lugar). Shift desembarca.
+
+| Tecla | Ação |
+|---|---|
+| W / S | Acelerar / frear e dar ré |
+| A / D | Girar |
+| E (embarcado) ou Shift + clique direito | Painel da caldeira |
+| R | Abafador: Fechado → Normal → Aberto |
+| V | Válvula de alívio (−2 bar; cega quem está perto, fora do veículo) |
+| H | Apito |
+
+- **Cuidado com a pressão:** acima de 10 bar a válvula de segurança solta vapor que cega todos
+  em volta (inclusive você) e desgasta o casco. Use o abafador e o acelerador.
+- **Sem água com o fogo aceso** a caldeira superaquece. Pôr água numa caldeira seca acima de
+  200 °C causa um choque térmico.
+- **Conserte** com lingote/pepita/bloco de ferro, lingote de cobre ou Kit de Reparo. Madeira só
+  remenda até 60 %.
+- **Recolher:** Shift + clique direito com a Chave de Caldeireiro, com todos fora do veículo e a
+  caldeira fria. O item guarda a integridade e a água.
 
 ## Requisitos
 
@@ -59,7 +89,19 @@ O gerador falha se duas faces ficarem sobrepostas no mesmo plano (isso cintila n
 
 - Branches por funcionalidade, commits no padrão [Conventional Commits](https://www.conventionalcommits.org/),
   um PR por fase, com descrição e passos de teste.
-- O GitHub Actions compila o mod a cada push e PR e confere se o modelo gerado está em dia.
+- O GitHub Actions compila o mod, roda os testes JUnit e os GameTests de servidor a cada push e
+  PR, roda o GameTest de cliente numa tela virtual (prints ficam como artefato) e confere se o
+  modelo gerado está em dia.
+
+### Testes
+
+```bash
+./gradlew test               # caldeira (JUnit)
+./gradlew runGameTest        # servidor: interação, combustível, válvula, reparo, direção...
+./gradlew runClientGameTest  # cliente: abre o jogo, pilota e tira prints (build/run/clientGameTest/screenshots)
+```
+
+Em Linux sem tela: `SDL_VIDEO_FORCE_EGL=1 xvfb-run -a -s "-screen 0 1280x720x24+32" ./gradlew runClientGameTest`.
 
 ## Licença
 

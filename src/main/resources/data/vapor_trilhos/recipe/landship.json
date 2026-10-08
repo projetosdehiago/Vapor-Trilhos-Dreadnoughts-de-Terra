@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "P": "#minecraft:planks",
+    "G": "minecraft:glass_pane",
+    "B": "vapor_trilhos:steam_boiler",
+    "T": "vapor_trilhos:reinforced_track"
+  },
+  "pattern": [
+    "PGP",
+    "PBP",
+    "TPT"
+  ],
+  "result": {
+    "id": "vapor_trilhos:landship"
+  }
+}
