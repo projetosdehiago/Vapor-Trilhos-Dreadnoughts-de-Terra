@@ -131,9 +131,11 @@ cube("deck", (22.5, 15.5, -22.5), (1, 1, 45), "dark_iron")
 # --- Esteiras -----------------------------------------------------------------
 # A esteira é uma corrente de elos que percorre um laço (estádio): reta de cima, arco em volta da
 # roda dentada da frente, reta de baixo, arco em volta da roda de trás. As medidas são escolhidas
-# para a animação repetir sem emenda: em um ciclo cada elo anda exatamente até a posição do
-# próximo (passo S), e isso equivale a 45° nas rodas dentadas e 90° nas rodas de apoio — as duas
-# têm simetria de 45°, então o recomeço do ciclo é invisível.
+# para a animação repetir sem emenda: um ciclo é uma volta inteira (360°) da roda dentada, que
+# corresponde a 8 passos de elo; as rodas de apoio dão 2 voltas. No fim do ciclo cada elo está
+# exatamente na posição de repouso de outro elo e todas as rodas voltaram à pose inicial.
+# (Girar só 45° por ciclo não serve: as barras do octógono têm espessuras diferentes, e o
+# recomeço ficava visível como um "pulo".)
 TRACK_YC = 7.0                     # altura do eixo das rodas dentadas
 LINK_R = 6.0                       # raio do caminho do centro dos elos nos arcos
 LINK_S = LINK_R * math.pi / 4      # passo entre elos (= 45° no arco)
@@ -141,8 +143,10 @@ STRAIGHT_LINKS = 13                # elos nas duas retas juntas
 TRACK_H = STRAIGHT_LINKS * LINK_S / 4  # meia distância entre eixos das rodas dentadas
 LINK_COUNT = 8 + STRAIGHT_LINKS
 TRACK_PERIM = LINK_COUNT * LINK_S
-TRACK_CYCLE = 0.3                  # segundos por passo na velocidade 1x (≈ 1 bloco/s)
-ROAD_R = LINK_R / 2                # rodas de apoio giram 90° por passo
+TRACK_STEP_TIME = 0.3              # segundos por passo de elo na velocidade 1x (≈ 1 bloco/s)
+TRACK_STEPS = 8                    # passos por ciclo = 1 volta inteira da roda dentada
+TRACK_CYCLE = TRACK_STEP_TIME * TRACK_STEPS
+ROAD_R = LINK_R / 2                # rodas de apoio: metade do raio = 2 voltas por ciclo
 ROAD_Z = (-6.5, 0.0, 6.5)
 SPROCKET_R = 5.0
 
@@ -439,28 +443,31 @@ geo = {
 # Animações (todas em laço sem emenda: rodas repetem a cada 45°, garras a cada 4 px)
 # ----------------------------------------------------------------------------
 def track_anim(side, direction):
-    """Cada elo anda um passo (LINK_S) pelo laço; rodas dentadas giram 45°, de apoio 90°."""
-    steps = 8
+    """Um ciclo = 8 passos de elo = 1 volta da roda dentada (2 voltas das rodas de apoio)."""
+    samples = 4 * TRACK_STEPS
+    dist = LINK_S * TRACK_STEPS
     bones_ = {}
     for i in range(LINK_COUNT):
         u0 = i * LINK_S
         z0, y0, b0 = track_path(u0)
         pos, rot = {}, {}
-        for k in range(steps + 1):
-            t = k / steps
+        for k in range(samples + 1):
+            t = k / samples
             # ré: anda para trás (u diminui); soma uma volta para manter u positivo
-            z, y, b = track_path(u0 + direction * LINK_S * t + (TRACK_PERIM if direction < 0 else 0))
+            z, y, b = track_path(u0 + direction * dist * t + (TRACK_PERIM if direction < 0 else 0))
             if direction < 0:
                 b -= 360.0
             key = f"{round(t * TRACK_CYCLE, 4)}"
             pos[key] = [0, round(y - y0, 4), round(z - z0, 4)]
             rot[key] = [round(b - b0, 3), 0, 0]
         bones_[f"tread_{side}_{i}"] = {"position": pos, "rotation": rot}
-    end = f"{TRACK_CYCLE}"
+    def spin(turns):
+        return {"rotation": {f"{round(k / 4 * TRACK_CYCLE, 4)}": [round(direction * turns * 90 * k, 3), 0, 0]
+                             for k in range(5)}}
     for name in ("front", "rear"):
-        bones_[f"sprocket_{side}_{name}"] = {"rotation": {"0.0": [0, 0, 0], end: [45 * direction, 0, 0]}}
+        bones_[f"sprocket_{side}_{name}"] = spin(1)
     for i in range(len(ROAD_Z)):
-        bones_[f"wheel_{side}_{i}"] = {"rotation": {"0.0": [0, 0, 0], end: [90 * direction, 0, 0]}}
+        bones_[f"wheel_{side}_{i}"] = spin(2)
     return {"loop": True, "animation_length": TRACK_CYCLE, "bones": bones_}
 
 
@@ -491,8 +498,8 @@ animations = {
         "animation.landship.engine.idle": piston_anim(1.0, 1.0, 0.05),
         "animation.landship.engine.working": piston_anim(0.4, 2.0, 0.12),
         "animation.landship.compactor.roll": {
-            "loop": True, "animation_length": 0.5,
-            "bones": {"roller": {"rotation": {"0.0": [0, 0, 0], "0.5": [90, 0, 0]}}},
+            "loop": True, "animation_length": 2.0,                    # 1 volta inteira por ciclo
+            "bones": {"roller": {"rotation": {f"{k * 0.5}": [90 * k, 0, 0] for k in range(5)}}},
         },
         "animation.landship.boiler.vent": {
             "animation_length": 1.0,
