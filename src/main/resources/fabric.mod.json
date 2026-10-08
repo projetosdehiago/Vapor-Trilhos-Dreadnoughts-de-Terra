@@ -1,0 +1,32 @@
+{
+	"schemaVersion": 1,
+	"id": "vapor_trilhos",
+	"version": "${version}",
+	"name": "Vapor & Trilhos: Dreadnoughts de Terra",
+	"description": "Nomadic steampunk survival: heavy steam-powered landships on reinforced wooden tracks, customizable with modules.",
+	"authors": [
+		"projetosdehiago"
+	],
+	"contact": {
+		"sources": "https://github.com/projetosdehiago/Vapor-Trilhos-Dreadnoughts-de-Terra",
+		"issues": "https://github.com/projetosdehiago/Vapor-Trilhos-Dreadnoughts-de-Terra/issues"
+	},
+	"license": "MIT",
+	"icon": "assets/vapor_trilhos/icon.png",
+	"environment": "*",
+	"entrypoints": {
+		"main": [
+			"io.github.projetosdehiago.vaportrilhos.VaporTrilhos"
+		],
+		"client": [
+			"io.github.projetosdehiago.vaportrilhos.client.VaporTrilhosClient"
+		]
+	},
+	"depends": {
+		"fabricloader": ">=${loader_version}",
+		"minecraft": "~${minecraft_version}",
+		"java": ">=25",
+		"fabric-api": "*",
+		"geckolib": ">=${geckolib_version}"
+	}
+}
