@@ -21,6 +21,13 @@ public final class ModTags {
 	public static final TagKey<Item> REPAIR_WOOD_SMALL = item("repair/wood_small");  // +3, até 60 %
 	public static final TagKey<Item> REPAIR_WOOD_LARGE = item("repair/wood_large");  // +8, até 60 %
 
+	// compactador (design.md A6.4)
+	public static final TagKey<Block> COMPACTABLE = block("compactor/compactable");          // removido e guardado
+	public static final TagKey<Block> CRUSHABLE = block("compactor/crushable");              // esmagado, sem drop
+	public static final TagKey<Block> FLATTENS_TO_PATH = block("compactor/flattens_to_path"); // vira caminho de terra
+	public static final TagKey<Block> COMPACTOR_IMMUNE = block("compactor/immune");          // nunca mexe
+	public static final TagKey<Item> FILL_MATERIAL = item("compactor/fill_material");        // tapa buracos
+
 	private static TagKey<Block> block(String path) {
 		return TagKey.create(Registries.BLOCK, VaporTrilhos.id(path));
 	}

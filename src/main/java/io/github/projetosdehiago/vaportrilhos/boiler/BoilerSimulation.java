@@ -31,6 +31,8 @@ public final class BoilerSimulation {
 		public float extraBarPerSecond;
 		/** Redução da geração de vapor por módulos (bar/s), ex.: fornalha de alta temperatura. */
 		public float steamPenaltyBarPerSecond;
+		/** Ticks de queima consumidos a mais neste tick, ex.: fornalha de alta temperatura. */
+		public float extraBurnTicks;
 		/** Integridade atual / máxima. */
 		public float integrityFraction = 1f;
 
@@ -40,6 +42,7 @@ public final class BoilerSimulation {
 			stepUps = 0;
 			extraBarPerSecond = 0f;
 			steamPenaltyBarPerSecond = 0f;
+			extraBurnTicks = 0f;
 			integrityFraction = 1f;
 			return this;
 		}
@@ -73,7 +76,7 @@ public final class BoilerSimulation {
 
 		// --- combustível
 		if (s.fireLit) {
-			s.burnRemaining -= s.damper.fuelRate;
+			s.burnRemaining -= s.damper.fuelRate + load.extraBurnTicks;
 			if (s.burnRemaining <= 0f) {
 				int next = fuel.takeFuel();
 				if (next > 0) {
