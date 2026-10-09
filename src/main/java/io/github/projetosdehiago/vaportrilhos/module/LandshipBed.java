@@ -16,6 +16,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.TickTask;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.stats.Stats;
@@ -241,8 +242,15 @@ public final class LandshipBed {
 			newPlayer.sendSystemMessage(Component.translatable("message.vapor_trilhos.home_lost"));
 			return;
 		}
+		// Neste evento a conexão ainda aponta para o jogador antigo (o jogo só troca depois que o
+		// renascimento termina). Teleportar agora às vezes não pega: agenda para logo em seguida.
+		MinecraftServer server = newPlayer.level().getServer();
 		Vec3 spot = target.position();
-		newPlayer.teleportTo(target.level(), spot.x, spot.y, spot.z, Set.of(), target.yaw(), 0f, true);
+		server.schedule(new TickTask(server.getTickCount(), () -> {
+			if (!newPlayer.isRemoved()) {
+				newPlayer.teleportTo(target.level(), spot.x, spot.y, spot.z, Set.of(), target.yaw(), 0f, true);
+			}
+		}));
 	}
 
 	private static Map<UUID, BedLocation> index(MinecraftServer server) {
