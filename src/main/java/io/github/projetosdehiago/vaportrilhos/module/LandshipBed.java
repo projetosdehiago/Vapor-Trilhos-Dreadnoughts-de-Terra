@@ -4,30 +4,33 @@ import io.github.projetosdehiago.vaportrilhos.landship.LandshipEntity;
 import io.github.projetosdehiago.vaportrilhos.registry.ModAttachments;
 import io.github.projetosdehiago.vaportrilhos.registry.ModAttachments.BedLocation;
 import io.github.projetosdehiago.vaportrilhos.registry.ModAttachments.LandshipHome;
+import io.github.projetosdehiago.vaportrilhos.registry.ModAttachments.PreviousRespawn;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
+import java.util.Optional;
 import java.util.UUID;
 import net.fabricmc.fabric.api.entity.event.v1.EntitySleepEvents;
+import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents;
 import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents;
 import net.fabricmc.fabric.api.util.EventResult;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.TickTask;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.stats.Stats;
 import net.minecraft.world.attribute.BedRule;
 import net.minecraft.world.attribute.EnvironmentAttributes;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.vehicle.DismountHelper;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.storage.LevelData;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
@@ -41,9 +44,10 @@ import org.jspecify.annotations.Nullable;
  * O resto (pular a noite, tela "Sair da cama", acordar de manhã) é o fluxo normal do jogo.
  *
  * <p>Renascimento: o lar fica num anexo de dados do jogador ({@link ModAttachments#HOME}) e o
- * Overworld guarda um índice landship → posição ({@link ModAttachments#BED_INDEX}). Depois de
- * renascer, o jogador é levado para o lado do landship. Se o landship foi destruído, recolhido
- * ou perdeu a cama, o índice não tem mais a entrada: o lar é apagado e vale o spawn normal.
+ * Overworld guarda um índice landship → posição ({@link ModAttachments#BED_INDEX}). Na morte, o
+ * lar vira o ponto de renascimento do jogo (o jogador renasce ao lado do landship) e o ponto
+ * normal volta logo depois. Se o landship foi destruído, recolhido ou perdeu a cama, o índice
+ * não tem mais a entrada: o lar é apagado e vale o spawn normal.
  */
 public final class LandshipBed {
 	private LandshipBed() {
@@ -70,6 +74,7 @@ public final class LandshipBed {
 			player.removeAttached(ModAttachments.HOME);
 			return true;
 		});
+		ServerLivingEntityEvents.AFTER_DEATH.register(LandshipBed::afterDeath);
 		ServerPlayerEvents.AFTER_RESPAWN.register(LandshipBed::afterRespawn);
 	}
 
@@ -233,24 +238,35 @@ public final class LandshipBed {
 		return new RespawnTarget(level, standingSpotNear(level, location.position(), location.yaw()), location.yaw());
 	}
 
-	private static void afterRespawn(ServerPlayer oldPlayer, ServerPlayer newPlayer, boolean alive) {
-		if (alive || !newPlayer.hasAttached(ModAttachments.HOME)) {
-			return; // voltando do End (não morreu) ou sem lar
-		}
-		RespawnTarget target = findRespawn(newPlayer);
-		if (target == null) {
-			newPlayer.sendSystemMessage(Component.translatable("message.vapor_trilhos.home_lost"));
+	/**
+	 * Na morte: se o lar ainda existe, ele vira o ponto de renascimento "forçado" do jogo, então o
+	 * próprio renascimento já põe o jogador ao lado do landship (sem teleporte depois, que dependia
+	 * de o cliente confirmar a posição enquanto ainda carregava o mundo). O ponto normal fica
+	 * guardado e volta logo depois do renascimento.
+	 */
+	private static void afterDeath(LivingEntity entity, DamageSource source) {
+		if (!(entity instanceof ServerPlayer player) || !player.hasAttached(ModAttachments.HOME)) {
 			return;
 		}
-		// Neste evento a conexão ainda aponta para o jogador antigo (o jogo só troca depois que o
-		// renascimento termina). Teleportar agora às vezes não pega: agenda para logo em seguida.
-		MinecraftServer server = newPlayer.level().getServer();
-		Vec3 spot = target.position();
-		server.schedule(new TickTask(server.getTickCount(), () -> {
-			if (!newPlayer.isRemoved()) {
-				newPlayer.teleportTo(target.level(), spot.x, spot.y, spot.z, Set.of(), target.yaw(), 0f, true);
-			}
-		}));
+		RespawnTarget target = findRespawn(player);
+		if (target == null) {
+			player.sendSystemMessage(Component.translatable("message.vapor_trilhos.home_lost"));
+			return;
+		}
+		if (!player.hasAttached(ModAttachments.PREVIOUS_RESPAWN)) {
+			player.setAttached(ModAttachments.PREVIOUS_RESPAWN, new PreviousRespawn(Optional.ofNullable(player.getRespawnConfig())));
+		}
+		LevelData.RespawnData data = LevelData.RespawnData.of(target.level().dimension(), BlockPos.containing(target.position()), target.yaw(), 0f);
+		player.setRespawnPosition(new ServerPlayer.RespawnConfig(data, true), false);
+	}
+
+	private static void afterRespawn(ServerPlayer oldPlayer, ServerPlayer newPlayer, boolean alive) {
+		PreviousRespawn previous = oldPlayer.getAttached(ModAttachments.PREVIOUS_RESPAWN);
+		if (alive || previous == null) {
+			return;
+		}
+		newPlayer.setRespawnPosition(previous.config().orElse(null), false);
+		newPlayer.removeAttached(ModAttachments.PREVIOUS_RESPAWN);
 	}
 
 	private static Map<UUID, BedLocation> index(MinecraftServer server) {

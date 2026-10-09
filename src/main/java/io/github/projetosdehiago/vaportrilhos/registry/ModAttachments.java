@@ -4,11 +4,13 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import io.github.projetosdehiago.vaportrilhos.VaporTrilhos;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import net.fabricmc.fabric.api.attachment.v1.AttachmentRegistry;
 import net.fabricmc.fabric.api.attachment.v1.AttachmentType;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 
@@ -32,6 +34,19 @@ public final class ModAttachments {
 				Codec.FLOAT.fieldOf("yaw").forGetter(BedLocation::yaw)
 		).apply(i, BedLocation::new));
 	}
+
+	/**
+	 * Ponto de renascimento "normal" do jogador, guardado entre a morte e o renascimento enquanto
+	 * o lar do landship ocupa o lugar dele (ver {@code LandshipBed}).
+	 */
+	public record PreviousRespawn(Optional<ServerPlayer.RespawnConfig> config) {
+		public static final Codec<PreviousRespawn> CODEC = RecordCodecBuilder.create(i -> i.group(
+				ServerPlayer.RespawnConfig.CODEC.optionalFieldOf("config").forGetter(PreviousRespawn::config)
+		).apply(i, PreviousRespawn::new));
+	}
+
+	public static final AttachmentType<PreviousRespawn> PREVIOUS_RESPAWN = AttachmentRegistry.create(VaporTrilhos.id("previous_respawn"),
+			builder -> builder.persistent(PreviousRespawn.CODEC).copyOnDeath());
 
 	/** No jogador; sobrevive à morte (é justamente quando é usado). */
 	public static final AttachmentType<LandshipHome> HOME = AttachmentRegistry.create(VaporTrilhos.id("landship_home"),
