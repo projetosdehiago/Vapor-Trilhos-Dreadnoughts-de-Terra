@@ -474,9 +474,12 @@ o Bedrock.
 - Renascimento: o "lar" (UUID do landship) é um **Data Attachment** persistente no jogador,
   copiado na morte. O índice landship → posição (dimensão, posição, direção) é outro anexo
   persistente, no Overworld (dispensa `SavedData`); o landship atualiza a própria entrada a cada
-  segundo e a remove quando é destruído, recolhido ou perde a cama. No
-  `ServerPlayerEvents.AFTER_RESPAWN` o jogador é levado para o lado do landship; sem entrada no
-  índice, o lar é apagado e vale o spawn normal. Dormir numa cama comum troca o lar
+  segundo e a remove quando é destruído, recolhido ou perde a cama. Na morte
+  (`ServerLivingEntityEvents.AFTER_DEATH`), o lugar ao lado do landship vira o ponto de
+  renascimento **forçado** do jogo, e o ponto normal do jogador fica guardado num anexo; no
+  `ServerPlayerEvents.AFTER_RESPAWN` ele volta. (Teleportar depois de renascer era instável: o
+  cliente ainda está carregando o mundo.) Sem entrada no índice, o lar é apagado e vale o spawn
+  normal. Dormir numa cama comum troca o lar
   (`ALLOW_SETTING_SPAWN`).
 
 ### B3.6 Compactador
