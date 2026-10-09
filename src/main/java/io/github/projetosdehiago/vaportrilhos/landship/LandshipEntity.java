@@ -99,6 +99,7 @@ public class LandshipEntity extends VehicleEntity implements HasCustomInventoryS
 	private static final EntityDataAccessor<Integer> DATA_DAMPER = SynchedEntityData.defineId(LandshipEntity.class, EntityDataSerializers.INT);
 	/** Módulos por encaixe + compactador ligado ({@link LandshipModules#encode()}). */
 	private static final EntityDataAccessor<Integer> DATA_MODULES = SynchedEntityData.defineId(LandshipEntity.class, EntityDataSerializers.INT);
+	private static final EntityDataAccessor<Integer> DATA_WHISTLE = SynchedEntityData.defineId(LandshipEntity.class, EntityDataSerializers.INT);
 
 	private static final int FLAG_FIRE = 1;
 	private static final int FLAG_DRY = 2;
@@ -192,6 +193,7 @@ public class LandshipEntity extends VehicleEntity implements HasCustomInventoryS
 		builder.define(DATA_FLAGS, (byte) 0);
 		builder.define(DATA_DAMPER, Damper.NORMAL.ordinal());
 		builder.define(DATA_MODULES, 0);
+		builder.define(DATA_WHISTLE, WhistleSound.STEAM.ordinal());
 	}
 
 	public float getWaterMb() {
@@ -1017,13 +1019,40 @@ public class LandshipEntity extends VehicleEntity implements HasCustomInventoryS
 			case CYCLE_DAMPER -> cycleDamper(sender);
 			case MANUAL_VENT -> manualVent(level, sender);
 			case TOGGLE_COMPACTOR -> toggleCompactor(sender);
-			case WHISTLE -> {
-				if (whistleCooldown <= 0) {
-					playSound(level, ModSounds.WHISTLE, 3f, 1f);
-					whistleCooldown = 20;
-				}
-			}
+			case WHISTLE -> blowWhistle(level);
 		}
+	}
+
+	/** O apito escolhido (dado sincronizado; vale nos dois lados). */
+	public WhistleSound getWhistle() {
+		return WhistleSound.byId(entityData.get(DATA_WHISTLE));
+	}
+
+	/** Aba Apito do painel: troca o som e toca uma vez para quem escolheu ouvir. */
+	public void selectWhistle(Player player, WhistleSound whistle) {
+		entityData.set(DATA_WHISTLE, whistle.ordinal());
+		player.sendOverlayMessage(Component.translatable("message.vapor_trilhos.whistle_selected", whistleName(whistle)));
+		whistleCooldown = 0;
+		if (level() instanceof ServerLevel serverLevel) {
+			blowWhistle(serverLevel);
+		}
+	}
+
+	/** Nome para mostrar: o personalizado aparece como "Personalizado: gemidão". */
+	public static Component whistleName(WhistleSound whistle) {
+		Component name = Component.translatable("whistle.vapor_trilhos." + whistle.id());
+		return whistle == WhistleSound.CUSTOM
+				? name.copy().append(": ").append(Component.translatable("whistle.vapor_trilhos.custom_name"))
+				: name;
+	}
+
+	private void blowWhistle(ServerLevel level) {
+		if (whistleCooldown > 0) {
+			return;
+		}
+		WhistleSound whistle = getWhistle();
+		playSound(level, whistle.sound(), 3f, 1f);
+		whistleCooldown = whistle.cooldownTicks;
 	}
 
 	public void cycleDamper(Player player) {
@@ -1106,6 +1135,7 @@ public class LandshipEntity extends VehicleEntity implements HasCustomInventoryS
 		output.putFloat("Pressure", boiler.pressureBar);
 		output.putBoolean("FireLit", boiler.fireLit);
 		output.putInt("Damper", boiler.damper.ordinal());
+		output.putString("Whistle", getWhistle().id());
 		output.putFloat("BurnRemaining", boiler.burnRemaining);
 		output.putFloat("BurnTotal", boiler.burnTotal);
 		ContainerHelper.saveAllItems(output.child("Fuel"), fuel.getItems());
@@ -1120,6 +1150,12 @@ public class LandshipEntity extends VehicleEntity implements HasCustomInventoryS
 		boiler.pressureBar = input.getFloatOr("Pressure", 0f);
 		boiler.fireLit = input.getBooleanOr("FireLit", false);
 		boiler.damper = Damper.byId(input.getIntOr("Damper", Damper.NORMAL.ordinal()));
+		String whistle = input.getStringOr("Whistle", WhistleSound.STEAM.id());
+		for (WhistleSound option : WhistleSound.values()) {
+			if (option.id().equals(whistle)) {
+				entityData.set(DATA_WHISTLE, option.ordinal());
+			}
+		}
 		boiler.burnRemaining = input.getFloatOr("BurnRemaining", 0f);
 		boiler.burnTotal = input.getFloatOr("BurnTotal", 0f);
 		ContainerHelper.loadAllItems(input.childOrEmpty("Fuel"), fuel.getItems());

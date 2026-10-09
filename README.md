@@ -29,7 +29,7 @@ personalizável com módulos (cama, baús de carga, fornalha de alta temperatura
 | E (embarcado) ou Shift + clique direito | Painel da caldeira |
 | R | Abafador: Fechado → Normal → Aberto |
 | V | Válvula de alívio (−2 bar; cega quem está perto, fora do veículo) |
-| H | Apito |
+| H | Apito (o som se escolhe na aba **Apito** do painel: a vapor, buzina, sino, corneta ou personalizado) |
 | C | Liga/desliga o compactador |
 
 - **Cuidado com a pressão:** acima de 10 bar a válvula de segurança solta vapor que cega todos
@@ -132,6 +132,7 @@ python3 design/model/build_preview.py preview.html    # visualizador 3D no naveg
 O gerador falha se duas faces ficarem sobrepostas no mesmo plano (isso cintila no jogo).
 As texturas dos itens e dos blocos também são geradas por código:
 `python3 design/textures/gen_item_textures.py` e `python3 design/textures/gen_block_textures.py`.
+Os sons dos apitos também: `python3 design/audio/gen_whistles.py` (precisa de numpy e ffmpeg).
 
 ## Desenvolvimento
 

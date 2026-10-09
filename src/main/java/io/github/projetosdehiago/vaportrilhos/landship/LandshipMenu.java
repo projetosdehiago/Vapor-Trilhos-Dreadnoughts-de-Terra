@@ -31,7 +31,8 @@ public class LandshipMenu extends AbstractContainerMenu {
 		BOILER,
 		CARGO,
 		FURNACE,
-		MODULES
+		MODULES,
+		WHISTLE
 	}
 
 	public static final int BUTTON_FIRE = 0;
@@ -44,6 +45,8 @@ public class LandshipMenu extends AbstractContainerMenu {
 	public static final int BUTTON_TAB = 10;
 	/** + {@link ModuleSlot#ordinal()} do baú mostrado na aba Carga. */
 	public static final int BUTTON_CARGO_PAGE = 20;
+	/** + {@link WhistleSound#ordinal()}. */
+	public static final int BUTTON_WHISTLE = 40;
 
 	public static final int FUEL_X = 8;
 	public static final int FUEL_Y = 80;
@@ -234,6 +237,10 @@ public class LandshipMenu extends AbstractContainerMenu {
 		if (landship == null || !(player.level() instanceof ServerLevel level)) {
 			return false;
 		}
+		if (buttonId >= BUTTON_WHISTLE && buttonId < BUTTON_WHISTLE + WhistleSound.values().length) {
+			landship.selectWhistle(player, WhistleSound.byId(buttonId - BUTTON_WHISTLE));
+			return true;
+		}
 		switch (buttonId) {
 			case BUTTON_FIRE -> landship.toggleFire(level, player);
 			case BUTTON_DAMPER -> landship.cycleDamper(player);
@@ -276,7 +283,7 @@ public class LandshipMenu extends AbstractContainerMenu {
 				case CARGO -> hasModuleAt(cargoPage, ModuleType.CARGO) && moveItemStackTo(stack,
 						CARGO_START + LandshipModules.cargoStart(cargoPage), CARGO_START + LandshipModules.cargoStart(cargoPage) + LandshipModules.CARGO_SIZE, false);
 				case FURNACE -> hasModule(ModuleType.FURNACE) && moveItemStackTo(stack, FURNACE_START, FURNACE_START + 1, false);
-				case MODULES -> false;
+				case MODULES, WHISTLE -> false;
 			};
 			if (!moved) {
 				return ItemStack.EMPTY;

@@ -107,5 +107,17 @@
   "assembly.vapor_trilhos.assembled": "Landship assembled!",
   "assembly.vapor_trilhos.disassembled": "Landship disassembled into blocks",
   "assembly.vapor_trilhos.no_room": "No room to place the blocks here",
-  "assembly.vapor_trilhos.needs_repair": "Repair the hull to 100% before disassembling"
+  "assembly.vapor_trilhos.needs_repair": "Repair the hull to 100% before disassembling",
+  "tab.vapor_trilhos.whistle": "Whistle",
+  "whistle.vapor_trilhos.steam": "Steam whistle",
+  "whistle.vapor_trilhos.foghorn": "Foghorn",
+  "whistle.vapor_trilhos.bell": "Ship's bell",
+  "whistle.vapor_trilhos.war_horn": "War horn",
+  "whistle.vapor_trilhos.custom": "Custom",
+  "whistle.vapor_trilhos.custom_name": "gemidão",
+  "message.vapor_trilhos.whistle_selected": "Whistle: %s",
+  "subtitles.vapor_trilhos.whistle.foghorn": "Landship foghorn",
+  "subtitles.vapor_trilhos.whistle.bell": "Landship bell rings",
+  "subtitles.vapor_trilhos.whistle.war_horn": "Landship war horn",
+  "subtitles.vapor_trilhos.whistle.custom": "Landship custom whistle"
 }

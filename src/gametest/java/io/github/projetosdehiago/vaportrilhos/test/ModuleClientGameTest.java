@@ -5,6 +5,7 @@ import io.github.projetosdehiago.vaportrilhos.boiler.BoilerState;
 import io.github.projetosdehiago.vaportrilhos.client.screen.LandshipScreen;
 import io.github.projetosdehiago.vaportrilhos.landship.LandshipEntity;
 import io.github.projetosdehiago.vaportrilhos.landship.LandshipMenu;
+import io.github.projetosdehiago.vaportrilhos.landship.WhistleSound;
 import io.github.projetosdehiago.vaportrilhos.module.LandshipBed;
 import io.github.projetosdehiago.vaportrilhos.module.LandshipModules;
 import io.github.projetosdehiago.vaportrilhos.module.ModuleSlot;
@@ -89,7 +90,7 @@ public class ModuleClientGameTest implements FabricClientGameTest {
 			singleplayer.getServer().runOnServer(server -> player(server).openMenu(landship(server, landshipId)));
 			context.waitForScreen(LandshipScreen.class);
 			context.takeScreenshot("modules-2-tab-boiler");
-			for (LandshipMenu.Tab tab : new LandshipMenu.Tab[] {LandshipMenu.Tab.CARGO, LandshipMenu.Tab.FURNACE, LandshipMenu.Tab.MODULES}) {
+			for (LandshipMenu.Tab tab : new LandshipMenu.Tab[] {LandshipMenu.Tab.CARGO, LandshipMenu.Tab.FURNACE, LandshipMenu.Tab.MODULES, LandshipMenu.Tab.WHISTLE}) {
 				context.runOnClient(minecraft -> {
 					LandshipMenu menu = ((LandshipScreen) minecraft.gui.screen()).getMenu();
 					menu.select(LandshipMenu.BUTTON_TAB + tab.ordinal());
@@ -97,6 +98,16 @@ public class ModuleClientGameTest implements FabricClientGameTest {
 				});
 				context.waitTicks(tab == LandshipMenu.Tab.FURNACE ? 40 : 5);
 				context.takeScreenshot("modules-3-tab-" + tab.name().toLowerCase(Locale.ROOT));
+			}
+			context.runOnClient(minecraft -> {
+				LandshipMenu menu = ((LandshipScreen) minecraft.gui.screen()).getMenu();
+				minecraft.gameMode.handleInventoryButtonClick(menu.containerId, LandshipMenu.BUTTON_WHISTLE + WhistleSound.CUSTOM.ordinal());
+			});
+			context.waitTicks(10);
+			context.takeScreenshot("modules-3-tab-whistle-custom");
+			WhistleSound chosen = context.computeOnClient(minecraft -> ((LandshipEntity) minecraft.level.getEntity(landshipId)).getWhistle());
+			if (chosen != WhistleSound.CUSTOM) {
+				throw new AssertionError("a aba Apito devia escolher o personalizado, ficou " + chosen);
 			}
 			context.runOnClient(minecraft -> minecraft.player.closeContainer());
 			context.waitTicks(5);

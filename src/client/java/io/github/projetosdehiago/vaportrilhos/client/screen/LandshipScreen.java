@@ -5,6 +5,7 @@ import io.github.projetosdehiago.vaportrilhos.client.hud.Gauges;
 import io.github.projetosdehiago.vaportrilhos.landship.LandshipEntity;
 import io.github.projetosdehiago.vaportrilhos.landship.LandshipMenu;
 import io.github.projetosdehiago.vaportrilhos.landship.LandshipMenu.Tab;
+import io.github.projetosdehiago.vaportrilhos.landship.WhistleSound;
 import io.github.projetosdehiago.vaportrilhos.module.ModuleSlot;
 import io.github.projetosdehiago.vaportrilhos.module.ModuleType;
 import java.util.ArrayList;
@@ -30,7 +31,7 @@ public class LandshipScreen extends AbstractContainerScreen<LandshipMenu> {
 	private static final int SHADOW = 0xFF555555;
 	private static final int SLOT_BG = 0xFF8B8B8B;
 	private static final int SLOT_DARK = 0xFF373737;
-	private static final int TAB_WIDTH = 52;
+	private static final int TAB_WIDTH = 50;
 	private static final int TAB_HEIGHT = 18;
 
 	private final Map<Tab, Button> tabButtons = new EnumMap<>(Tab.class);
@@ -41,6 +42,7 @@ public class LandshipScreen extends AbstractContainerScreen<LandshipMenu> {
 	private Button compactorButton;
 	private Button sleepButton;
 	private Button disassembleButton;
+	private final Map<WhistleSound, Button> whistleButtons = new EnumMap<>(WhistleSound.class);
 
 	public LandshipScreen(LandshipMenu menu, Inventory inventory, Component title) {
 		super(menu, inventory, title, 176, LandshipMenu.IMAGE_HEIGHT);
@@ -84,6 +86,14 @@ public class LandshipScreen extends AbstractContainerScreen<LandshipMenu> {
 				.bounds(x + 114, y + 64, 54, 18).build());
 		disassembleButton = addRenderableWidget(Button.builder(Component.translatable("button.vapor_trilhos.disassemble"),
 				b -> press(LandshipMenu.BUTTON_DISASSEMBLE)).bounds(x + 8, y + 86, 160, 18).build());
+
+		// aba Apito: uma opção por linha; o personalizado mostra o nome do áudio ao lado
+		whistleButtons.clear();
+		for (WhistleSound whistle : WhistleSound.values()) {
+			Button button = addRenderableWidget(Button.builder(Component.translatable("whistle.vapor_trilhos." + whistle.id()),
+					b -> press(LandshipMenu.BUTTON_WHISTLE + whistle.ordinal())).bounds(x + 8, y + 17 + whistle.ordinal() * 17, 100, 16).build());
+			whistleButtons.put(whistle, button);
+		}
 		updateButtons();
 	}
 
@@ -104,7 +114,7 @@ public class LandshipScreen extends AbstractContainerScreen<LandshipMenu> {
 
 	private boolean tabAvailable(LandshipEntity landship, Tab tab) {
 		return switch (tab) {
-			case BOILER, MODULES -> true;
+			case BOILER, MODULES, WHISTLE -> true;
 			case CARGO -> landship.hasModule(ModuleType.CARGO);
 			case FURNACE -> landship.hasModule(ModuleType.FURNACE);
 		};
@@ -170,6 +180,11 @@ public class LandshipScreen extends AbstractContainerScreen<LandshipMenu> {
 		compactorButton.setMessage(Component.translatable(landship.isCompactorOn() ? "hud.vapor_trilhos.compactor_on" : "hud.vapor_trilhos.compactor_off"));
 		sleepButton.visible = current == Tab.MODULES && landship.hasModule(ModuleType.BED);
 		disassembleButton.visible = current == Tab.MODULES;
+		WhistleSound selected = landship.getWhistle();
+		for (Map.Entry<WhistleSound, Button> entry : whistleButtons.entrySet()) {
+			entry.getValue().visible = current == Tab.WHISTLE;
+			entry.getValue().active = entry.getKey() != selected;
+		}
 	}
 
 	@Override
@@ -224,6 +239,19 @@ public class LandshipScreen extends AbstractContainerScreen<LandshipMenu> {
 					g.text(font, Component.translatable(hot ? "gui.vapor_trilhos.furnace_hot" : "gui.vapor_trilhos.furnace_cold",
 							Math.round(landship.getTemperature())), 8, 72, hot ? 0xFF2E6B2E : 0xFF8B2E2E, false);
 					g.text(font, Component.translatable("gui.vapor_trilhos.furnace_hint"), 8, 84, Gauges.TEXT_DARK, false);
+				}
+			}
+			case WHISTLE -> {
+				if (landship != null) {
+					for (WhistleSound whistle : WhistleSound.values()) {
+						int ty = 21 + whistle.ordinal() * 17;
+						if (whistle == WhistleSound.CUSTOM) {
+							g.text(font, Component.translatable("whistle.vapor_trilhos.custom_name"), 114, ty, 0xFF2E4F7A, false);
+						}
+						if (whistle == landship.getWhistle()) {
+							g.text(font, "◀", whistle == WhistleSound.CUSTOM ? 160 : 114, ty, 0xFF2E6B2E, false);
+						}
+					}
 				}
 			}
 			case MODULES -> {

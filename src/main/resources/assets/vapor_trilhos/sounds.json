@@ -71,10 +71,7 @@
   "whistle": {
     "subtitle": "subtitles.vapor_trilhos.whistle",
     "sounds": [
-      {
-        "name": "minecraft:item/goat_horn/call1",
-        "pitch": 1.3
-      }
+      "vapor_trilhos:whistle/steam"
     ]
   },
   "repair": {
@@ -91,6 +88,30 @@
       {
         "name": "minecraft:block/smithing_table/smithing_table2"
       }
+    ]
+  },
+  "whistle.foghorn": {
+    "subtitle": "subtitles.vapor_trilhos.whistle.foghorn",
+    "sounds": [
+      "vapor_trilhos:whistle/foghorn"
+    ]
+  },
+  "whistle.bell": {
+    "subtitle": "subtitles.vapor_trilhos.whistle.bell",
+    "sounds": [
+      "vapor_trilhos:whistle/bell"
+    ]
+  },
+  "whistle.war_horn": {
+    "subtitle": "subtitles.vapor_trilhos.whistle.war_horn",
+    "sounds": [
+      "vapor_trilhos:whistle/war_horn"
+    ]
+  },
+  "whistle.custom": {
+    "subtitle": "subtitles.vapor_trilhos.whistle.custom",
+    "sounds": [
+      "vapor_trilhos:whistle/gemidao"
     ]
   }
 }
