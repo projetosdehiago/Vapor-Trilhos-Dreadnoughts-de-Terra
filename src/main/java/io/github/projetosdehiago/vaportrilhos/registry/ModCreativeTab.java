@@ -22,6 +22,10 @@ public final class ModCreativeTab {
 						output.accept(ModItems.REINFORCED_TRACK);
 						output.accept(ModItems.BOILERMAKER_WRENCH);
 						output.accept(ModItems.REPAIR_KIT);
+						output.accept(ModItems.BED_MODULE);
+						output.accept(ModItems.CARGO_MODULE);
+						output.accept(ModItems.FURNACE_MODULE);
+						output.accept(ModItems.COMPACTOR_MODULE);
 					})
 					.build());
 
