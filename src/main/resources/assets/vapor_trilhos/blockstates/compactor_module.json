@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "vapor_trilhos:block/compactor_module"
+    }
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/cube_bottom_top",
+  "textures": {
+    "top": "vapor_trilhos:block/bed_module_top",
+    "bottom": "minecraft:block/oak_planks",
+    "side": "vapor_trilhos:block/bed_module_side"
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/cube_column",
+  "textures": {
+    "end": "vapor_trilhos:block/reinforced_track_top",
+    "side": "vapor_trilhos:block/reinforced_track_side"
+  }
+}
