@@ -37,6 +37,7 @@ consertar o desgaste → expandir com módulos**. A logística de água é o gar
 | Integridade máxima | 200 pontos |
 | Flutua? | **Não.** Afunda em água funda; ver A3.6 |
 | Encaixes de módulo | 6 gerais + 1 frontal (só compactador) |
+| Plataforma | O teto do casco (2 blocos) é sólido: dá para subir e ficar em pé, mas não atravessar. Quem está em pé em cima anda e gira junto com o veículo |
 
 ### A2.0 Visual
 
@@ -46,6 +47,10 @@ virado para o piloto, bancos no meio, caldeira verde com cintas de cobre, manôm
 atrás, dois cilindros verticais com pistões entre bancos e caldeira, faróis na frente. Esteiras
 com saia blindada por fora cobrindo a metade de cima; as rodas de apoio aparecem embaixo. Os 6 encaixes de módulo ficam nas laterais do deque (células 3×3); o
 compactador é um rolo à frente. Altura visual até o topo da chaminé: 3,4 blocos.
+
+A fumaça da chaminé e o vapor contínuo da zona vermelha **não aparecem para quem está a bordo**
+(tapavam a câmera em terceira pessoa); quem vê de fora continua vendo. As nuvens de vapor dos
+eventos (válvula de segurança, alívio manual, choque térmico) aparecem para todos.
 
 ### A2.1 Controles (padrão; todos reconfiguráveis)
 
@@ -241,7 +246,7 @@ devolve o conteúdo (vai para o inventário do jogador; o que não couber cai no
 
 ### A6.1 Cama móvel
 
-> **Decisão pendente** (ver perguntas no fim): propor **as duas funções**.
+> **Decisão:** as duas funções, e o ponto de renascimento só vale enquanto o landship existir.
 
 - **Dormir:** com o veículo parado (velocidade 0) e regras normais de sono (noite/tempestade,
   sem monstros a 8 blocos), o jogador pode dormir na cama do landship; conta para pular a noite.
@@ -557,10 +562,21 @@ Decisões e detalhes que a Parte A não fixava:
   R, V e H usam um payload próprio (`LandshipActionPayload`), validado no servidor (só o piloto).
 - **Janela do jogo:** o 26.3 usa SDL3 em vez de GLFW. Em ambiente sem tela (CI/Xvfb), o cliente
   precisa de `SDL_VIDEO_FORCE_EGL=1`.
-- **Ponto a revisar:** em terceira pessoa, a chaminé e a fumaça ficam bem atrás do piloto e
-  atrapalham a visão.
+- **Chaminé:** o modelo fica como está; a fumaça e o vapor contínuos são escondidos só para o
+  jogador local quando ele está a bordo (o cliente informa isso à entidade por um predicado
+  registrado em `VaporTrilhosClient`).
+- **Plataforma (pedido do amigo, "como o ghast feliz parado, mas andando como o Create"):** a
+  caixa de colisão de 2,9 × 2,0 já era sólida; agora, a cada tick, quem está em pé no teto é
+  movido pelo mesmo deslocamento e giro do landship (`carryEntitiesOnTop`). Cada lado move só o
+  que controla: o cliente move o próprio jogador, o servidor move mobs e itens; sem mixin. O
+  landship ignora quem está em cima ao calcular a própria colisão, para não travar ao subir
+  degraus. Limite: a colisão é uma caixa só, então quem sobe fica na altura do teto da cabine
+  (2 blocos), não no deque; caixas separadas para deque, cabine e caldeira exigiriam mixins.
+- **Esteiras para quem vê de fora:** o deslocamento usado na animação agora vem da posição do
+  tick anterior gravada antes da interpolação, então as esteiras também giram para os outros
+  jogadores (antes só giravam para o piloto).
 
-Testes: 13 JUnit (caldeira), 15 GameTests de servidor (`./gradlew build`), 1 GameTest de cliente
+Testes: 13 JUnit (caldeira), 17 GameTests de servidor (`./gradlew build`), 1 GameTest de cliente
 (`./gradlew runClientGameTest`, no CI com Xvfb e prints como artefato).
 
 ## B4. Plano de entregas

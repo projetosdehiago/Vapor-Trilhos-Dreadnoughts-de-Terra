@@ -36,6 +36,8 @@ personalizável com módulos (cama, baús de carga, fornalha de alta temperatura
   200 °C causa um choque térmico.
 - **Conserte** com lingote/pepita/bloco de ferro, lingote de cobre ou Kit de Reparo. Madeira só
   remenda até 60 %.
+- **Plataforma:** o teto do landship é sólido. Dá para subir nele, e quem está em pé em cima anda
+  e gira junto com o veículo.
 - **Recolher:** Shift + clique direito com a Chave de Caldeireiro, com todos fora do veículo e a
   caldeira fria. O item guarda a integridade e a água.
 
