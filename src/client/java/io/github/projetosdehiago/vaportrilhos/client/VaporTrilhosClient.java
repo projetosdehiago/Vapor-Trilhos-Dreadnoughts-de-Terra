@@ -36,6 +36,10 @@ public final class VaporTrilhosClient implements ClientModInitializer {
 	@Override
 	public void onInitializeClient() {
 		EntityRenderers.register(ModEntities.LANDSHIP, LandshipRenderer::new);
+		LandshipEntity.setLocalPlayerAboardCheck(landship -> {
+			LocalPlayer player = Minecraft.getInstance().player;
+			return player != null && player.getVehicle() == landship;
+		});
 		MenuScreens.register(ModMenus.LANDSHIP, LandshipScreen::new);
 		KeyMappingHelper.registerKeyMapping(DAMPER);
 		KeyMappingHelper.registerKeyMapping(VENT);

@@ -71,6 +71,7 @@ import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import java.util.function.Predicate;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -97,6 +98,8 @@ public class LandshipEntity extends VehicleEntity implements HasCustomInventoryS
 	/** Meia distância entre as esteiras, em blocos (centro da esteira a 19,5 px do eixo). */
 	public static final float TRACK_HALF_SPAN = 19.5f / 16f;
 	private static final float SEAT_HEIGHT = 1.15f;
+	/** Folga vertical para considerar uma entidade "em pé em cima" do landship. */
+	private static final double PLATFORM_TOLERANCE = 0.1;
 
 	// animações (nomes iguais aos do landship.animation.json)
 	private static final RawAnimation LEFT_FORWARD = RawAnimation.begin().thenLoop("animation.landship.track_left.forward");
@@ -135,7 +138,16 @@ public class LandshipEntity extends VehicleEntity implements HasCustomInventoryS
 	private boolean inputLeft;
 	private boolean inputRight;
 
+	// --- plataforma: posição no fim do tick anterior (em cada lado)
+	private double lastTickX;
+	private double lastTickY;
+	private double lastTickZ;
+	private float lastTickYaw;
+	private boolean hasLastTick;
+
 	// --- cliente (visual)
+	/** Preenchido pelo cliente: o jogador local está a bordo deste landship? */
+	private static Predicate<LandshipEntity> localPlayerAboard = landship -> false;
 	private float trackLeftSpeed;
 	private float trackRightSpeed;
 	private float visualTurnRate;
@@ -233,6 +245,10 @@ public class LandshipEntity extends VehicleEntity implements HasCustomInventoryS
 
 	@Override
 	public boolean canCollideWith(Entity entity) {
+		// quem está em cima é carregado junto (carryEntitiesOnTop) e não impede a subida de degraus
+		if (entity.getY() >= getBoundingBox().maxY - PLATFORM_TOLERANCE) {
+			return false;
+		}
 		return (entity.canBeCollidedWith(this) || entity.isPushable()) && !isPassengerOfSameVehicle(entity);
 	}
 
@@ -315,9 +331,11 @@ public class LandshipEntity extends VehicleEntity implements HasCustomInventoryS
 		if (getHurtTime() > 0) {
 			setHurtTime(getHurtTime() - 1);
 		}
-		double prevX = getX();
-		double prevZ = getZ();
-		float prevYaw = getYRot();
+		// xo/zo/yRotO são gravados antes da interpolação: assim o delta vale também para quem só
+		// vê o landship de longe (antes, as esteiras ficavam paradas para os outros jogadores)
+		double prevX = xo;
+		double prevZ = zo;
+		float prevYaw = yRotO;
 
 		super.tick();
 
@@ -338,6 +356,55 @@ public class LandshipEntity extends VehicleEntity implements HasCustomInventoryS
 		} else {
 			clientVisualTick(prevX, prevZ, prevYaw);
 		}
+		if (!isRemoved()) {
+			carryEntitiesOnTop();
+		}
+	}
+
+	/**
+	 * Plataforma: quem está em pé em cima do landship anda e gira junto com ele.
+	 *
+	 * <p>Cada lado move só o que controla ({@code isLocalInstanceAuthoritative}): o cliente move o
+	 * próprio jogador, o servidor move mobs e itens. O delta é medido do fim do tick anterior até
+	 * agora, então inclui o movimento do piloto, a interpolação e os pacotes do servidor.
+	 */
+	private void carryEntitiesOnTop() {
+		double dx = getX() - lastTickX;
+		double dy = getY() - lastTickY;
+		double dz = getZ() - lastTickZ;
+		float dYaw = Mth.wrapDegrees(getYRot() - lastTickYaw);
+		boolean moved = hasLastTick && (dx * dx + dy * dy + dz * dz > 1.0E-8 || Math.abs(dYaw) > 1.0E-3f)
+				&& dx * dx + dy * dy + dz * dz < 4.0;
+		if (moved) {
+			AABB before = getBoundingBox().move(-dx, -dy, -dz);
+			double top = before.maxY;
+			AABB deck = new AABB(before.minX, top - PLATFORM_TOLERANCE, before.minZ, before.maxX, top + PLATFORM_TOLERANCE, before.maxZ);
+			for (Entity entity : level().getEntities(this, deck, this::canCarry)) {
+				if (entity.getY() < top - PLATFORM_TOLERANCE || entity.getY() > top + PLATFORM_TOLERANCE) {
+					continue;
+				}
+				Vec3 offset = new Vec3(entity.getX() - lastTickX, 0, entity.getZ() - lastTickZ);
+				Vec3 turned = offset.yRot(-dYaw * Mth.DEG_TO_RAD);
+				entity.move(MoverType.SELF, new Vec3(turned.x - offset.x + dx, dy, turned.z - offset.z + dz));
+				if (dYaw != 0f) {
+					entity.setYRot(entity.getYRot() + dYaw);
+					entity.setYHeadRot(entity.getYHeadRot() + dYaw);
+				}
+			}
+		}
+		lastTickX = getX();
+		lastTickY = getY();
+		lastTickZ = getZ();
+		lastTickYaw = getYRot();
+		hasLastTick = true;
+	}
+
+	private boolean canCarry(Entity entity) {
+		return entity.isLocalInstanceAuthoritative()
+				&& !entity.isPassenger()
+				&& !entity.noPhysics
+				&& !entity.isSpectator()
+				&& !(entity instanceof LandshipEntity);
 	}
 
 	/** Chamado pelo cliente do piloto antes de cada tick. */
@@ -942,7 +1009,9 @@ public class LandshipEntity extends VehicleEntity implements HasCustomInventoryS
 	}
 
 	private void spawnAmbientParticles() {
-		if (isFireLit()) {
+		// fumaça e vapor contínuos somem para quem está a bordo (tapavam a câmera em terceira pessoa);
+		// quem vê de fora continua vendo. O vapor da zona vermelha já aparece no HUD do piloto.
+		if (isFireLit() && !localPlayerAboard.test(this)) {
 			float power = powerFactor(getPressure());
 			if (random.nextFloat() < 0.25f + power * 0.5f) {
 				Vec3 top = modelPointToWorld(0, 54, 19);
@@ -960,6 +1029,10 @@ public class LandshipEntity extends VehicleEntity implements HasCustomInventoryS
 		} else if (integrityFraction < LOW_INTEGRITY_FRACTION && random.nextFloat() < 0.05f) {
 			level().addParticle(ParticleTypes.SMALL_FLAME, getX() + random.nextGaussian() * 0.6, getY() + 0.8, getZ() + random.nextGaussian() * 0.6, 0, 0.02, 0);
 		}
+	}
+
+	public static void setLocalPlayerAboardCheck(Predicate<LandshipEntity> check) {
+		localPlayerAboard = check;
 	}
 
 	public float getTrackLeftSpeed() {

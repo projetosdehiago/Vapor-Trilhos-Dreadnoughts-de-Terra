@@ -10,8 +10,11 @@ import io.github.projetosdehiago.vaportrilhos.registry.ModItems;
 import net.fabricmc.fabric.api.gametest.v1.GameTest;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -233,6 +236,71 @@ public class LandshipGameTests {
 				.thenExecute(() -> helper.assertTrue(landship.position().horizontalDistanceSqr() - start.horizontalDistanceSqr() < 0.01
 						&& landship.position().distanceTo(start) < 0.2, "sem pressão o landship não anda"))
 				.thenSucceed();
+	}
+
+	/** Landship com caldeira pronta, piloto a bordo e um suporte de armadura em pé no teto. */
+	private static ArmorStand standOnTop(GameTestHelper helper, LandshipEntity landship, double leftOffset) {
+		landship.setYRot(0f);
+		hotBoiler(landship, 8f);
+		Player pilot = helper.makeMockPlayer(GameType.SURVIVAL);
+		pilot.snapTo(landship.getX(), landship.getY(), landship.getZ());
+		pilot.startRiding(landship);
+		ArmorStand stand = new ArmorStand(helper.getLevel(), landship.getX() + leftOffset, landship.getY() + 2.6, landship.getZ());
+		helper.getLevel().addFreshEntity(stand);
+		return stand;
+	}
+
+	@GameTest(maxTicks = 100)
+	public void entitiesStandOnTheRoofAndRideAlong(GameTestHelper helper) {
+		LandshipEntity landship = setUp(helper);
+		ArmorStand stand = standOnTop(helper, landship, 0.5);
+		Vec3[] start = new Vec3[2];
+		helper.startSequence()
+				.thenIdle(20)
+				.thenExecute(() -> {
+					double top = landship.getBoundingBox().maxY;
+					helper.assertTrue(Math.abs(stand.getY() - top) < 0.05, "o teto devia ser sólido: suporte em " + stand.getY() + ", teto em " + top);
+					start[0] = landship.position();
+					start[1] = stand.position();
+				})
+				.thenExecuteFor(40, () -> landship.setInput(true, false, false, false))
+				.thenExecute(() -> {
+					Vec3 shipMoved = landship.position().subtract(start[0]);
+					Vec3 standMoved = stand.position().subtract(start[1]);
+					helper.assertTrue(shipMoved.z > 1.5, "o landship devia ter andado, andou " + shipMoved.z);
+					helper.assertTrue(standMoved.distanceTo(shipMoved) < 0.2,
+							"quem está em cima devia andar junto: landship " + shipMoved + ", suporte " + standMoved);
+					helper.assertTrue(Math.abs(stand.getY() - landship.getBoundingBox().maxY) < 0.05, "o suporte devia continuar em pé no teto");
+				})
+				.thenSucceed();
+	}
+
+	@GameTest(maxTicks = 100)
+	public void pivotTurnsWhoIsOnTheRoof(GameTestHelper helper) {
+		LandshipEntity landship = setUp(helper);
+		ArmorStand stand = standOnTop(helper, landship, 1.0);
+		Vec3[] localStart = new Vec3[1];
+		float[] yawStart = new float[1];
+		helper.startSequence()
+				.thenIdle(20)
+				.thenExecute(() -> {
+					localStart[0] = toLocal(landship, stand);
+					yawStart[0] = landship.getYRot();
+				})
+				.thenExecuteFor(40, () -> landship.setInput(false, false, false, true))
+				.thenExecute(() -> {
+					float turned = Math.abs(landship.getYRot() - yawStart[0]);
+					helper.assertTrue(turned > 60f, "o landship devia ter girado no lugar, girou " + turned + "°");
+					Vec3 local = toLocal(landship, stand);
+					helper.assertTrue(local.distanceTo(localStart[0]) < 0.2,
+							"o suporte devia girar junto (mesma posição em relação ao landship): antes " + localStart[0] + ", depois " + local);
+				})
+				.thenSucceed();
+	}
+
+	/** Posição da entidade no referencial do landship (desfaz a rotação dele). */
+	private static Vec3 toLocal(LandshipEntity landship, Entity entity) {
+		return entity.position().subtract(landship.position()).yRot(landship.getYRot() * Mth.DEG_TO_RAD);
 	}
 
 	@GameTest
