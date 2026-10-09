@@ -18,6 +18,7 @@ import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.Slot;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Painel do landship com abas: Caldeira, Carga, Fornalha e Módulos. Desenhado sem textura
@@ -39,6 +40,7 @@ public class LandshipScreen extends AbstractContainerScreen<LandshipMenu> {
 	private Button damperButton;
 	private Button compactorButton;
 	private Button sleepButton;
+	private Button disassembleButton;
 
 	public LandshipScreen(LandshipMenu menu, Inventory inventory, Component title) {
 		super(menu, inventory, title, 176, LandshipMenu.IMAGE_HEIGHT);
@@ -77,9 +79,11 @@ public class LandshipScreen extends AbstractContainerScreen<LandshipMenu> {
 		}
 
 		compactorButton = addRenderableWidget(Button.builder(Component.empty(), b -> press(LandshipMenu.BUTTON_COMPACTOR))
-				.bounds(x + 8, y + 86, 102, 18).build());
+				.bounds(x + 8, y + 64, 102, 18).build());
 		sleepButton = addRenderableWidget(Button.builder(Component.translatable("button.vapor_trilhos.sleep"), b -> press(LandshipMenu.BUTTON_SLEEP))
-				.bounds(x + 114, y + 86, 54, 18).build());
+				.bounds(x + 114, y + 64, 54, 18).build());
+		disassembleButton = addRenderableWidget(Button.builder(Component.translatable("button.vapor_trilhos.disassemble"),
+				b -> press(LandshipMenu.BUTTON_DISASSEMBLE)).bounds(x + 8, y + 86, 160, 18).build());
 		updateButtons();
 	}
 
@@ -165,6 +169,7 @@ public class LandshipScreen extends AbstractContainerScreen<LandshipMenu> {
 		compactorButton.visible = current == Tab.MODULES && installed[ModuleSlot.FRONT.ordinal()] == ModuleType.COMPACTOR;
 		compactorButton.setMessage(Component.translatable(landship.isCompactorOn() ? "hud.vapor_trilhos.compactor_on" : "hud.vapor_trilhos.compactor_off"));
 		sleepButton.visible = current == Tab.MODULES && landship.hasModule(ModuleType.BED);
+		disassembleButton.visible = current == Tab.MODULES;
 	}
 
 	@Override
@@ -223,18 +228,22 @@ public class LandshipScreen extends AbstractContainerScreen<LandshipMenu> {
 			}
 			case MODULES -> {
 				if (landship != null) {
+					// o deque visto de cima: frente em cima, esquerda do piloto à esquerda
 					ModuleType[] installed = landship.getInstalledModules();
-					int row = 0;
-					for (ModuleSlot slot : ModuleSlot.values()) {
-						ModuleType type = installed[slot.ordinal()];
-						Component name = Component.translatable(type == null ? "gui.vapor_trilhos.empty_slot" : "module.vapor_trilhos." + type.id());
-						g.text(font, Component.translatable("slot.vapor_trilhos." + slot.code), 8, 17 + row * 9, Gauges.TEXT_DARK, false);
-						g.text(font, name, 78, 17 + row * 9, type == null ? 0xFF7A7A7A : 0xFF2E4F7A, false);
-						row++;
+					moduleCell(g, installed[ModuleSlot.FRONT.ordinal()], 48, 16);
+					ModuleSlot[] deck = ModuleSlot.DECK;
+					for (int i = 0; i < deck.length; i++) {
+						moduleCell(g, installed[deck[i].ordinal()], i % 2 == 0 ? 8 : 90, 28 + (i / 2) * 11);
 					}
 				}
 			}
 		}
+	}
+
+	private void moduleCell(GuiGraphicsExtractor g, @Nullable ModuleType type, int x, int y) {
+		g.fill(x - 1, y - 1, x + 79, y + 9, 0xFFB4B4B4);
+		Component name = Component.translatable(type == null ? "gui.vapor_trilhos.empty_slot" : "module.vapor_trilhos." + type.id());
+		g.text(font, name, x + 39 - font.width(name) / 2, y, type == null ? 0xFF7A7A7A : 0xFF2E4F7A, false);
 	}
 
 	/** Retângulo com borda clara em cima/esquerda e escura embaixo/direita, no estilo vanilla. */

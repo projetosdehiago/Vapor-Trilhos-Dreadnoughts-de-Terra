@@ -1,5 +1,6 @@
 package io.github.projetosdehiago.vaportrilhos.landship;
 
+import io.github.projetosdehiago.vaportrilhos.assembly.LandshipAssembly;
 import io.github.projetosdehiago.vaportrilhos.boiler.BalanceConstants;
 import io.github.projetosdehiago.vaportrilhos.module.FurnaceModule;
 import io.github.projetosdehiago.vaportrilhos.module.LandshipBed;
@@ -38,6 +39,7 @@ public class LandshipMenu extends AbstractContainerMenu {
 	public static final int BUTTON_VENT = 2;
 	public static final int BUTTON_COMPACTOR = 3;
 	public static final int BUTTON_SLEEP = 4;
+	public static final int BUTTON_DISASSEMBLE = 5;
 	/** + {@link Tab#ordinal()}. */
 	public static final int BUTTON_TAB = 10;
 	/** + {@link ModuleSlot#ordinal()} do baú mostrado na aba Carga. */
@@ -237,6 +239,8 @@ public class LandshipMenu extends AbstractContainerMenu {
 			case BUTTON_DAMPER -> landship.cycleDamper(player);
 			case BUTTON_VENT -> landship.manualVent(level, player);
 			case BUTTON_COMPACTOR -> landship.toggleCompactor(player);
+			// o painel fecha sozinho quando o landship some (stillValid)
+			case BUTTON_DISASSEMBLE -> LandshipAssembly.disassemble(level, landship, player);
 			case BUTTON_SLEEP -> {
 				if (player instanceof ServerPlayer serverPlayer) {
 					serverPlayer.closeContainer();
