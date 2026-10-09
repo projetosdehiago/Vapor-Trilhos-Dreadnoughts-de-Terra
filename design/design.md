@@ -1,6 +1,6 @@
 # Vapor & Trilhos: Dreadnoughts de Terra — Documento de Design
 
-> **Status:** v0.2 — arquitetura aprovada; Fase 1 (núcleo) implementada (ver B5).
+> **Status:** v0.3 — arquitetura aprovada; Fases 1 (núcleo) e 2 (módulos) implementadas (ver B5).
 > Este documento é a fonte para a versão Java (Fabric) **e** para uma futura versão Bedrock.
 > Por isso ele é dividido em duas partes:
 >
@@ -37,6 +37,7 @@ consertar o desgaste → expandir com módulos**. A logística de água é o gar
 | Integridade máxima | 200 pontos |
 | Flutua? | **Não.** Afunda em água funda; ver A3.6 |
 | Encaixes de módulo | 6 gerais + 1 frontal (só compactador) |
+| Plataforma | O teto do casco (2 blocos) é sólido: dá para subir e ficar em pé, mas não atravessar. Quem está em pé em cima anda e gira junto com o veículo |
 
 ### A2.0 Visual
 
@@ -46,6 +47,10 @@ virado para o piloto, bancos no meio, caldeira verde com cintas de cobre, manôm
 atrás, dois cilindros verticais com pistões entre bancos e caldeira, faróis na frente. Esteiras
 com saia blindada por fora cobrindo a metade de cima; as rodas de apoio aparecem embaixo. Os 6 encaixes de módulo ficam nas laterais do deque (células 3×3); o
 compactador é um rolo à frente. Altura visual até o topo da chaminé: 3,4 blocos.
+
+A fumaça da chaminé e o vapor contínuo da zona vermelha **não aparecem para quem está a bordo**
+(tapavam a câmera em terceira pessoa); quem vê de fora continua vendo. As nuvens de vapor dos
+eventos (válvula de segurança, alívio manual, choque térmico) aparecem para todos.
 
 ### A2.1 Controles (padrão; todos reconfiguráveis)
 
@@ -241,10 +246,13 @@ devolve o conteúdo (vai para o inventário do jogador; o que não couber cai no
 
 ### A6.1 Cama móvel
 
-> **Decisão pendente** (ver perguntas no fim): propor **as duas funções**.
+> **Decisão:** as duas funções, e o ponto de renascimento só vale enquanto o landship existir.
 
 - **Dormir:** com o veículo parado (velocidade 0) e regras normais de sono (noite/tempestade,
-  sem monstros a 8 blocos), o jogador pode dormir na cama do landship; conta para pular a noite.
+  sem monstros a 8 blocos), o jogador pode dormir na cama do landship (botão **Dormir** na aba
+  Módulos do painel); conta para pular a noite. Ao deitar, o landship se alinha ao múltiplo de
+  90° mais próximo (o corpo deitado só aparece nessas 4 direções; a pegada é quadrada, então o
+  espaço ocupado não muda). Ao acordar, o jogador levanta ao lado do veículo.
 - **Ponto de renascimento:** dormir (ou usar a cama) registra o landship como "lar" do jogador.
   Ao morrer, renasce ao lado do landship, onde quer que ele esteja. Se o landship foi
   destruído ou recolhido como item, o lar é apagado e vale o spawn padrão.
@@ -266,7 +274,8 @@ por quem estiver a até 5 blocos. Hoppers/funis não interagem (é uma entidade 
 ### A6.4 Compactador frontal
 
 Ligado (tecla C ou painel) e andando para frente a ≥ 0,5 m/s, a cada 0,25 s processa a faixa
-de 3 blocos de largura logo à frente das esteiras:
+de 3 blocos de largura logo à frente das esteiras, em duas fileiras (2 e 3 blocos à frente do
+centro; a 5 m/s o veículo anda 1,25 bloco entre duas passadas, então nada escapa):
 
 1. **Obstáculos** (até 2 blocos de altura, no nível do veículo): blocos de terra (grama,
    terra, terra grossa, podzol, micélio, terra enraizada) e **cascalho** são removidos;
@@ -422,8 +431,10 @@ o Bedrock.
 ### B3.3 Módulos
 
 - `ModuleType` (registro próprio simples em código): BED, CARGO, FURNACE, COMPACTOR, com
-  regras de encaixe e limites.
-- Estado por módulo serializado com `Codec` (inventário do baú, progresso da fornalha).
+  regras de encaixe e limites; `ModuleSlot`: os 6 encaixes do deque e o da frente.
+- `LandshipModules` guarda o que está instalado (e a ordem, para a chave tirar o último), um
+  trecho de 27 espaços de carga por encaixe do deque, a fornalha e o estado do compactador. Os
+  clientes recebem só um inteiro sincronizado (3 bits por encaixe + compactador ligado).
 - Inventários expostos como `Storage<ItemVariant>` da **Fabric Transfer API**
   (`ContainerStorage`), usado pelo compactador para depositar drops e retirar terra/cascalho
   com transações (sem duplicação nem perda).
@@ -443,12 +454,19 @@ o Bedrock.
 
 ### B3.5 Cama
 
-- Dormir: `EntitySleepEvents` (Fabric) permite validar "cama" que não é bloco de cama
-  (`ALLOW_BED`) e as condições de sono — sem mixin.
-- Renascimento: o "lar" fica num **Data Attachment** persistente no jogador (UUID do landship +
-  última posição/dimensão conhecida); um `SavedData` do servidor mantém o índice
-  landship → posição atualizada. No `ServerPlayerEvents.AFTER_RESPAWN` o jogador é teleportado
-  para o lado do landship. Se algum detalhe exigir mixin, aviso antes.
+- Dormir: no 26.3 o sono vanilla (`startSleeping`) exige um bloco de cama. O botão do painel
+  faz o que a cama vanilla faz (pose de sono, posição de sono, estatística, lista de quem dorme)
+  e o `EntitySleepEvents.ALLOW_BED` (Fabric) confirma a cada tick que aquele ponto é cama
+  enquanto o landship estiver parado ali. O resto é o fluxo normal: pular a noite, "Sair da
+  cama", acordar de manhã. `MODIFY_SLEEPING_DIRECTION` dá a direção do corpo e `STOP_SLEEPING`
+  levanta o jogador ao lado do veículo. Sem mixin.
+- Renascimento: o "lar" (UUID do landship) é um **Data Attachment** persistente no jogador,
+  copiado na morte. O índice landship → posição (dimensão, posição, direção) é outro anexo
+  persistente, no Overworld (dispensa `SavedData`); o landship atualiza a própria entrada a cada
+  segundo e a remove quando é destruído, recolhido ou perde a cama. No
+  `ServerPlayerEvents.AFTER_RESPAWN` o jogador é levado para o lado do landship; sem entrada no
+  índice, o lar é apagado e vale o spawn normal. Dormir numa cama comum troca o lar
+  (`ALLOW_SETTING_SPAWN`).
 
 ### B3.6 Compactador
 
@@ -557,11 +575,51 @@ Decisões e detalhes que a Parte A não fixava:
   R, V e H usam um payload próprio (`LandshipActionPayload`), validado no servidor (só o piloto).
 - **Janela do jogo:** o 26.3 usa SDL3 em vez de GLFW. Em ambiente sem tela (CI/Xvfb), o cliente
   precisa de `SDL_VIDEO_FORCE_EGL=1`.
-- **Ponto a revisar:** em terceira pessoa, a chaminé e a fumaça ficam bem atrás do piloto e
-  atrapalham a visão.
+- **Chaminé:** o modelo fica como está; a fumaça e o vapor contínuos são escondidos só para o
+  jogador local quando ele está a bordo (o cliente informa isso à entidade por um predicado
+  registrado em `VaporTrilhosClient`).
+- **Plataforma (pedido do amigo, "como o ghast feliz parado, mas andando como o Create"):** a
+  caixa de colisão de 2,9 × 2,0 já era sólida; agora, a cada tick, quem está em pé no teto é
+  movido pelo mesmo deslocamento e giro do landship (`carryEntitiesOnTop`). Cada lado move só o
+  que controla: o cliente move o próprio jogador, o servidor move mobs e itens; sem mixin. O
+  landship ignora quem está em cima ao calcular a própria colisão, para não travar ao subir
+  degraus. Limite: a colisão é uma caixa só, então quem sobe fica na altura do teto da cabine
+  (2 blocos), não no deque; caixas separadas para deque, cabine e caldeira exigiriam mixins.
+- **Esteiras para quem vê de fora:** o deslocamento usado na animação agora vem da posição do
+  tick anterior gravada antes da interpolação, então as esteiras também giram para os outros
+  jogadores (antes só giravam para o piloto).
 
-Testes: 13 JUnit (caldeira), 15 GameTests de servidor (`./gradlew build`), 1 GameTest de cliente
-(`./gradlew runClientGameTest`, no CI com Xvfb e prints como artefato).
+Testes da Fase 1: 13 JUnit (caldeira), 17 GameTests de servidor (`./gradlew build`), 1 GameTest
+de cliente (`./gradlew runClientGameTest`, no CI com Xvfb e prints como artefato).
+
+### Fase 2 — módulos (implementada)
+
+| Parte da Parte A | Onde está |
+|---|---|
+| Encaixes, limites, instalar/remover (A6) | `module/ModuleType`, `ModuleSlot`, `LandshipModules`; `LandshipEntity.tryInstallModule/tryRemoveModule` |
+| Massa dos módulos (A4) | `LandshipEntity.drive()`: −3 % de velocidade máxima por módulo |
+| Cama (A6.1) | `module/LandshipBed` + `registry/ModAttachments` |
+| Baú de carga (A6.2) | aba Carga do `LandshipMenu` (uma página por baú) |
+| Fornalha (A6.3) | `module/FurnaceModule` (receitas de fundição comuns, 5 s por item) |
+| Compactador (A6.4) | `module/Compactor` + tags `vapor_trilhos:compactor/*` |
+| Painel com abas | `LandshipMenu` / `LandshipScreen` |
+
+Decisões e detalhes:
+
+- **Painel:** todos os espaços existem sempre (combustível, 6 × 27 de carga, fornalha); a aba e a
+  página escolhidas decidem quais ficam ativos. O duplo clique não junta itens de baús
+  escondidos. Alcance: a bordo ou a até 5 blocos do casco.
+- **Fornalha:** cada tick trabalhando gasta 1 tick a mais de queima da caldeira (5 s de queima
+  por item) e tira 0,05 bar/s da geração de vapor. A experiência fica guardada e sai quando
+  alguém retira a saída. Com a caldeira abaixo de 100 °C ou o fogo apagado, o progresso para.
+- **Compactador:** age em nome do piloto (`mayInteract` + `PlayerBlockBreakEvents.BEFORE`, então
+  mods de proteção podem vetar); guarda os drops e tira o aterro dos baús pela Transfer API
+  (`ContainerStorage` + `CombinedStorage`, só os trechos dos baús instalados).
+- **Destruição:** os módulos e tudo o que estava nos baús e na fornalha caem no chão.
+- **Recolher:** com módulos instalados, a chave tira o último módulo; só recolhe sem nenhum.
+
+Testes: 14 JUnit, 25 GameTests de servidor (8 dos módulos) e 2 GameTests de cliente (o segundo
+instala todos os módulos, fotografa as abas, dorme até de manhã e renasce ao lado do landship).
 
 ## B4. Plano de entregas
 

@@ -19,6 +19,10 @@ public final class ModItems {
 			new Item.Properties().stacksTo(1).component(ModDataComponents.LANDSHIP_DATA, ModDataComponents.LandshipData.NEW));
 	public static final Item BOILERMAKER_WRENCH = register("boilermaker_wrench", Item::new, new Item.Properties().stacksTo(1));
 	public static final Item REPAIR_KIT = register("repair_kit", Item::new, new Item.Properties().stacksTo(16));
+	public static final Item BED_MODULE = register("bed_module", Item::new, new Item.Properties().stacksTo(1));
+	public static final Item CARGO_MODULE = register("cargo_module", Item::new, new Item.Properties().stacksTo(4));
+	public static final Item FURNACE_MODULE = register("furnace_module", Item::new, new Item.Properties().stacksTo(1));
+	public static final Item COMPACTOR_MODULE = register("compactor_module", Item::new, new Item.Properties().stacksTo(1));
 
 	private static Item register(String name, Function<Item.Properties, Item> factory, Item.Properties properties) {
 		ResourceKey<Item> key = ResourceKey.create(Registries.ITEM, VaporTrilhos.id(name));

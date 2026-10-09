@@ -198,4 +198,25 @@ class BoilerSimulationTest {
 		assertEquals(0.5f, powerFactor(5f), 0.001f);
 		assertEquals(1f, powerFactor(11f));
 	}
+
+	@Test
+	void furnaceModuleBurnsFuelTwiceAsFastAndSlowsSteam() {
+		BoilerState plain = fullBoiler();
+		BoilerState withFurnace = fullBoiler();
+		for (BoilerState s : new BoilerState[] {plain, withFurnace}) {
+			s.temperatureC = BOILING_C;
+			s.fireLit = true;
+			s.burnRemaining = COAL_TICKS;
+			s.burnTotal = COAL_TICKS;
+		}
+		runSeconds(plain, new Coal(0), 10f);
+		load.extraBurnTicks = FURNACE_EXTRA_BURN_PER_TICK;
+		load.steamPenaltyBarPerSecond = FURNACE_STEAM_PENALTY_BAR_PER_S;
+		runSeconds(withFurnace, new Coal(0), 10f);
+		float plainBurn = COAL_TICKS - plain.burnRemaining;
+		float furnaceBurn = COAL_TICKS - withFurnace.burnRemaining;
+		assertEquals(2f * plainBurn, furnaceBurn, 1f, "a fornalha dobra o consumo no abafador Normal");
+		assertTrue(withFurnace.pressureBar < plain.pressureBar, "a fornalha rouba calor da geração de vapor");
+		assertEquals(0.5f, plain.pressureBar - withFurnace.pressureBar, 0.05f, "−0,05 bar/s em 10 s");
+	}
 }

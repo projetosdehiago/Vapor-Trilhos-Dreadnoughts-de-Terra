@@ -124,10 +124,76 @@ def repair_kit():
     return outline(img)
 
 
+WOOL = (232, 228, 220, 255)
+BRICK = (150, 74, 58, 255)
+BRICK_DARK = (104, 50, 40, 255)
+STONE = (150, 150, 150, 255)
+
+
+def module_base(d):
+    """Placa de ferro com rebites embaixo: a base comum dos módulos."""
+    d.rectangle((1, 12, 14, 14), fill=IRON_MID)
+    d.line((1, 12, 14, 12), fill=IRON)
+    for x in (2, 13):
+        d.point((x, 13), fill=IRON_DARK)
+
+
+def bed_module():
+    img, d = new()
+    module_base(d)
+    d.rectangle((2, 9, 13, 11), fill=WOOD)
+    d.rectangle((3, 7, 12, 9), fill=RED)
+    d.line((3, 9, 12, 9), fill=RED_DARK)
+    d.rectangle((3, 6, 6, 7), fill=WOOL)
+    d.rectangle((2, 4, 2, 11), fill=WOOD_DARK)
+    d.rectangle((13, 6, 13, 11), fill=WOOD_DARK)
+    return outline(img)
+
+
+def cargo_module():
+    img, d = new()
+    module_base(d)
+    d.rectangle((3, 3, 12, 11), fill=WOOD)
+    d.line((3, 6, 12, 6), fill=IRON_DARK)
+    d.line((3, 9, 12, 9), fill=IRON_DARK)
+    d.line((3, 3, 12, 3), fill=WOOD_DARK)
+    d.rectangle((7, 6, 8, 7), fill=BRASS)
+    return outline(img)
+
+
+def furnace_module():
+    img, d = new()
+    module_base(d)
+    d.rectangle((3, 4, 12, 11), fill=BRICK)
+    for y in (6, 9):
+        d.line((3, y, 12, y), fill=BRICK_DARK)
+    d.rectangle((6, 8, 9, 10), fill=FIRE)
+    d.line((6, 8, 9, 8), fill=SOOT)
+    d.rectangle((7, 1, 8, 3), fill=SOOT)
+    d.line((3, 4, 12, 4), fill=IRON)
+    return outline(img)
+
+
+def compactor_module():
+    img, d = new()
+    # rolo visto de lado entre dois braços
+    d.ellipse((4, 6, 11, 13), fill=IRON_DARK)
+    d.ellipse((5, 7, 10, 12), fill=IRON_MID)
+    d.point((7, 9), fill=BRASS)
+    d.point((8, 10), fill=BRASS)
+    d.line((2, 3, 6, 9), fill=IRON)
+    d.line((13, 3, 9, 9), fill=IRON)
+    d.rectangle((1, 2, 14, 3), fill=STONE)
+    d.line((1, 2, 14, 2), fill=IRON)
+    return outline(img)
+
+
 def main():
     OUT.mkdir(parents=True, exist_ok=True)
     for name, fn in (("reinforced_track", reinforced_track), ("steam_boiler", steam_boiler), ("landship", landship),
-                     ("boilermaker_wrench", boilermaker_wrench), ("repair_kit", repair_kit)):
+                     ("boilermaker_wrench", boilermaker_wrench), ("repair_kit", repair_kit),
+                     ("bed_module", bed_module), ("cargo_module", cargo_module), ("furnace_module", furnace_module),
+                     ("compactor_module", compactor_module)):
         fn().save(OUT / f"{name}.png")
         print(OUT / f"{name}.png")
 

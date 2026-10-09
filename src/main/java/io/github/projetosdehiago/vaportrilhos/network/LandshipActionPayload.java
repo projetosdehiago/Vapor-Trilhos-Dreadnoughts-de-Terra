@@ -16,7 +16,8 @@ public record LandshipActionPayload(Action action) implements CustomPacketPayloa
 	public enum Action {
 		CYCLE_DAMPER,
 		MANUAL_VENT,
-		WHISTLE;
+		WHISTLE,
+		TOGGLE_COMPACTOR;
 
 		public static Action byId(int id) {
 			Action[] all = values();

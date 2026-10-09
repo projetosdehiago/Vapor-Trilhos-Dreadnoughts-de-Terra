@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "P": "#minecraft:planks",
+    "B": "#minecraft:beds",
+    "I": "minecraft:iron_ingot"
+  },
+  "pattern": [
+    "PBP",
+    "IPI"
+  ],
+  "result": {
+    "id": "vapor_trilhos:bed_module"
+  }
+}

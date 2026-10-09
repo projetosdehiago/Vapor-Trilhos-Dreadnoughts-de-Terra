@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "N": "minecraft:iron_nugget",
+    "X": "minecraft:chest",
+    "P": "#minecraft:planks",
+    "I": "minecraft:iron_ingot"
+  },
+  "pattern": [
+    "NXN",
+    "PIP"
+  ],
+  "result": {
+    "id": "vapor_trilhos:cargo_module"
+  }
+}

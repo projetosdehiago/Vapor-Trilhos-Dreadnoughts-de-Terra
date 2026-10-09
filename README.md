@@ -5,8 +5,9 @@ veículos terrestres pesados — *landships* — sobre esteiras de madeira refor
 movidos por uma caldeira a vapor. É como os barcos grandes do jogo, mas para terra, e
 personalizável com módulos (cama, baús de carga, fornalha de alta temperatura e compactador).
 
-> **Status:** em desenvolvimento. Fase 1 (núcleo) pronta: o landship anda, a caldeira funciona,
-> solta vapor e se desgasta. Módulos (Fase 2) e montagem com blocos (Fase 3) vêm depois.
+> **Status:** em desenvolvimento. Fase 1 (núcleo) e Fase 2 (módulos) prontas: o landship anda,
+> a caldeira funciona, solta vapor e se desgasta, e recebe cama, baús, fornalha e compactador.
+> A montagem com blocos (Fase 3) vem depois.
 > O plano completo, as regras de jogo e os valores de balanceamento estão em
 > [`design/design.md`](design/design.md).
 
@@ -29,6 +30,7 @@ personalizável com módulos (cama, baús de carga, fornalha de alta temperatura
 | R | Abafador: Fechado → Normal → Aberto |
 | V | Válvula de alívio (−2 bar; cega quem está perto, fora do veículo) |
 | H | Apito |
+| C | Liga/desliga o compactador |
 
 - **Cuidado com a pressão:** acima de 10 bar a válvula de segurança solta vapor que cega todos
   em volta (inclusive você) e desgasta o casco. Use o abafador e o acelerador.
@@ -36,8 +38,27 @@ personalizável com módulos (cama, baús de carga, fornalha de alta temperatura
   200 °C causa um choque térmico.
 - **Conserte** com lingote/pepita/bloco de ferro, lingote de cobre ou Kit de Reparo. Madeira só
   remenda até 60 %.
+- **Plataforma:** o teto do landship é sólido. Dá para subir nele, e quem está em pé em cima anda
+  e gira junto com o veículo.
 - **Recolher:** Shift + clique direito com a Chave de Caldeireiro, com todos fora do veículo e a
   caldeira fria. O item guarda a integridade e a água.
+
+## Módulos (Fase 2)
+
+Fabrique os módulos (receitas no livro de receitas ou em `design/design.md`, seção A7) e, com o
+landship **parado**, **Shift + clique direito** com o módulo na mão para instalar. Eles ocupam
+os 6 encaixes do deque, da frente para trás (o compactador vai na frente). Cada módulo deixa o
+landship 3 % mais lento. **Shift + clique direito com a Chave de Caldeireiro** tira o último
+módulo instalado e devolve o conteúdo dele; sem módulos, a chave recolhe o veículo.
+
+| Módulo | Limite | Como usar |
+|---|---|---|
+| Cama Móvel | 1 | Painel → aba **Módulos** → **Dormir** (à noite, parado). Conta para pular a noite e vira seu ponto de renascimento, que só vale enquanto o landship existir. |
+| Baú de Carga | 4 | Painel → aba **Carga** (27 espaços por baú; botões 1–4 trocam de baú). Funciona a bordo ou a até 5 blocos. |
+| Fornalha de Alta Temperatura | 1 | Painel → aba **Fornalha**. Funde 2× mais rápido (5 s por item) com o calor da caldeira (acesa, ≥ 100 °C), gastando o combustível dela. |
+| Compactador Frontal | 1 | Tecla **C** ou botão na aba Módulos. Andando para a frente, tira terra e cascalho do caminho (vão para os baús), esmaga plantas, transforma o chão em caminho de terra e tapa buracos com terra/cascalho dos baús. |
+
+Se o landship for destruído, os módulos e o conteúdo dos baús e da fornalha caem no chão.
 
 ## Requisitos
 
@@ -97,8 +118,8 @@ O gerador falha se duas faces ficarem sobrepostas no mesmo plano (isso cintila n
 
 ```bash
 ./gradlew test               # caldeira (JUnit)
-./gradlew runGameTest        # servidor: interação, combustível, válvula, reparo, direção...
-./gradlew runClientGameTest  # cliente: abre o jogo, pilota e tira prints (build/run/clientGameTest/screenshots)
+./gradlew runGameTest        # servidor: caldeira, direção, plataforma, módulos, cama...
+./gradlew runClientGameTest  # cliente: pilota, usa os módulos, dorme, renasce e tira prints (build/run/clientGameTest/screenshots)
 ```
 
 Em Linux sem tela: `SDL_VIDEO_FORCE_EGL=1 xvfb-run -a -s "-screen 0 1280x720x24+32" ./gradlew runClientGameTest`.

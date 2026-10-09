@@ -6,10 +6,12 @@
 	"environment": "*",
 	"entrypoints": {
 		"fabric-gametest": [
-			"io.github.projetosdehiago.vaportrilhos.test.LandshipGameTests"
+			"io.github.projetosdehiago.vaportrilhos.test.LandshipGameTests",
+			"io.github.projetosdehiago.vaportrilhos.test.ModuleGameTests"
 		],
 		"fabric-client-gametest": [
-			"io.github.projetosdehiago.vaportrilhos.test.LandshipClientGameTest"
+			"io.github.projetosdehiago.vaportrilhos.test.LandshipClientGameTest",
+			"io.github.projetosdehiago.vaportrilhos.test.ModuleClientGameTest"
 		]
 	},
 	"depends": {

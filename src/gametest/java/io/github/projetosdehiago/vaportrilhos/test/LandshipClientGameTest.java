@@ -16,6 +16,7 @@ import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.phys.Vec3;
 
 /**
  * Teste de cliente ({@code ./gradlew runClientGameTest}): abre o jogo, cria um mundo plano, coloca
@@ -72,7 +73,7 @@ public class LandshipClientGameTest implements FabricClientGameTest {
 			context.runOnClient(minecraft -> minecraft.options.setCameraType(CameraType.THIRD_PERSON_BACK));
 
 			// dirigir: segura W por 3 s, depois curva
-			net.minecraft.world.phys.Vec3 start = singleplayer.getServer().computeOnServer(server -> landship(server, landshipId).position());
+			Vec3 start = singleplayer.getServer().computeOnServer(server -> landship(server, landshipId).position());
 			context.getInput().holdKeyFor(options -> options.keyUp, 60);
 			context.takeScreenshot("landship-3-driving");
 			context.getInput().holdKeyFor(options -> options.keyRight, 30);
@@ -103,6 +104,39 @@ public class LandshipClientGameTest implements FabricClientGameTest {
 			float integrity = singleplayer.getServer().computeOnServer(server -> landship(server, landshipId).serverIntegrity());
 			if (integrity >= BalanceConstants.MAX_INTEGRITY) {
 				throw new AssertionError("a ventilação devia desgastar o casco");
+			}
+
+			// plataforma: o jogador desce, sobe no teto e o landship anda sem piloto (movido pelo
+			// servidor). Quem leva o jogador junto é o próprio cliente dele.
+			singleplayer.getServer().runOnServer(server -> {
+				ServerPlayer player = player(server);
+				LandshipEntity landship = landship(server, landshipId);
+				player.stopRiding();
+				Vec3 roof = landship.position().add(landship.forwardVector().scale(-0.6)).add(landship.leftVector().scale(0.6));
+				player.teleportTo(roof.x, landship.getBoundingBox().maxY + 0.3, roof.z);
+			});
+			context.waitTicks(30);
+			context.runOnClient(minecraft -> {
+				LandshipEntity landship = (LandshipEntity) minecraft.level.getEntity(landshipId);
+				minecraft.player.setYRot(landship.getYRot() + 180f);
+				minecraft.player.setXRot(25f);
+				minecraft.options.setCameraType(CameraType.THIRD_PERSON_BACK);
+			});
+			Vec3 playerStart = context.computeOnClient(minecraft -> minecraft.player.position());
+			for (int i = 0; i < 40; i++) {
+				singleplayer.getServer().runOnServer(server -> {
+					LandshipEntity landship = landship(server, landshipId);
+					landship.setPos(landship.position().add(landship.forwardVector().scale(0.1)));
+				});
+				context.waitTick();
+			}
+			context.waitTicks(10);
+			context.takeScreenshot("landship-7-roof-platform");
+			Vec3 playerEnd = context.computeOnClient(minecraft -> minecraft.player.position());
+			double roofTop = context.computeOnClient(minecraft -> minecraft.level.getEntity(landshipId).getBoundingBox().maxY);
+			double carried = playerEnd.subtract(playerStart).horizontalDistance();
+			if (carried < 3.0 || Math.abs(playerEnd.y - roofTop) > 0.2) {
+				throw new AssertionError("o jogador no teto devia andar junto: andou " + carried + ", y " + playerEnd.y + " (teto " + roofTop + ")");
 			}
 		}
 	}

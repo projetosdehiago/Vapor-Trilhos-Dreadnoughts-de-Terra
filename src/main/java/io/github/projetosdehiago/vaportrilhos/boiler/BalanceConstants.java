@@ -83,6 +83,21 @@ public final class BalanceConstants {
 	public static final float WOOD_REPAIR_LIMIT_FRACTION = 0.6f;
 	public static final int REPAIR_COOLDOWN_TICKS = 10;
 
+	// --- módulos (A6)
+	/** Fornalha de alta temperatura: 5 s por item (a comum leva 10 s). */
+	public static final int FURNACE_TICKS_PER_ITEM = 100;
+	/** Cada item consome 5 s de queima da caldeira: 1 tick de queima extra por tick trabalhando. */
+	public static final float FURNACE_EXTRA_BURN_PER_TICK = 1f;
+	/** A fornalha rouba calor: −0,05 bar/s da geração de vapor enquanto trabalha. */
+	public static final float FURNACE_STEAM_PENALTY_BAR_PER_S = 0.05f;
+	/** Compactador ligado e trabalhando: +0,03 bar/s. */
+	public static final float COMPACTOR_BAR_PER_S = 0.03f;
+	public static final float COMPACTOR_MIN_SPEED_M_S = 0.5f;
+	public static final int COMPACTOR_INTERVAL_TICKS = 5;
+	public static final float WEAR_PER_COMPACTED_BLOCK = 0.05f;
+	/** Distância (blocos) até onde o painel e os baús de carga alcançam. */
+	public static final double MODULE_REACH = 5.0;
+
 	/** Fração de potência do motor para uma pressão: 0 abaixo de 2 bar, 1 a partir de 8 bar. */
 	public static float powerFactor(float pressureBar) {
 		float f = (pressureBar - MIN_DRIVE_BAR) / (FULL_POWER_BAR - MIN_DRIVE_BAR);
