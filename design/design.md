@@ -681,7 +681,8 @@ Decisões e detalhes:
   servidor confere o alcance do painel (`isUsableBy`) e as mesmas regras do botão.
 - **Leme:** o modelo usa a base `orientable` girada 180°: o volante fica virado para quem está
   atrás do leme (o piloto) e a seta no topo aponta para a frente do landship.
-- **Texturas dos blocos:** geradas por `design/textures/gen_block_textures.py`.
+- **Texturas dos blocos:** 32×32, geradas por `design/textures/gen_block_textures.py` com o mesmo
+  kit dos itens (faces cheias, que repetem lado a lado).
 - **Texturas dos itens:** 32×32, geradas por `design/textures/gen_item_textures.py` com o kit
   `pixelkit.py`; as mesmas imagens vão para o pacote de recursos do Bedrock.
 
