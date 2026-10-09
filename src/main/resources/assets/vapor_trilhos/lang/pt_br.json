@@ -119,5 +119,8 @@
   "subtitles.vapor_trilhos.whistle.foghorn": "Buzina do landship",
   "subtitles.vapor_trilhos.whistle.bell": "Sino do landship toca",
   "subtitles.vapor_trilhos.whistle.war_horn": "Corneta do landship",
-  "subtitles.vapor_trilhos.whistle.custom": "Apito personalizado do landship"
+  "subtitles.vapor_trilhos.whistle.custom": "Apito personalizado do landship",
+  "key.vapor_trilhos.disassemble": "Desmontar landship (apertar 2x)",
+  "message.vapor_trilhos.disassemble_confirm": "Aperte %s de novo para desmontar este landship em blocos",
+  "message.vapor_trilhos.disassemble_look": "Olhe para um landship para desmontá-lo"
 }

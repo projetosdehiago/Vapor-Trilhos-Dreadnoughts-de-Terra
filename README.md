@@ -5,7 +5,7 @@ veículos terrestres pesados — *landships* — sobre esteiras de madeira refor
 movidos por uma caldeira a vapor. É como os barcos grandes do jogo, mas para terra, e
 personalizável com módulos (cama, baús de carga, fornalha de alta temperatura e compactador).
 
-> **Status:** as 3 fases estão prontas: o landship anda, a caldeira funciona, solta vapor e se
+> **Status:** versão **1.0.0**. As 3 fases estão prontas: o landship anda, a caldeira funciona, solta vapor e se
 > desgasta (Fase 1), recebe cama, baús, fornalha e compactador (Fase 2) e pode ser montado e
 > desmontado a partir de blocos (Fase 3).
 > O plano completo, as regras de jogo e os valores de balanceamento estão em
@@ -31,6 +31,7 @@ personalizável com módulos (cama, baús de carga, fornalha de alta temperatura
 | V | Válvula de alívio (−2 bar; cega quem está perto, fora do veículo) |
 | H | Apito (o som se escolhe na aba **Apito** do painel: a vapor, buzina, sino, corneta ou personalizado) |
 | C | Liga/desliga o compactador |
+| J ×2 (de fora, olhando para o landship) | Desmonta em blocos (Fase 3); o primeiro toque pede confirmação |
 
 - **Cuidado com a pressão:** acima de 10 bar a válvula de segurança solta vapor que cega todos
   em volta (inclusive você) e desgasta o casco. Use o abafador e o acelerador.
@@ -77,7 +78,8 @@ Os módulos (cama, baú, fornalha) são opcionais. Clique com a **Chave de Calde
 se estiver tudo certo, os blocos viram o landship, com os módulos e o conteúdo dos baús. Se
 faltar algo, a mensagem diz o quê e sai fumaça dos blocos errados.
 
-Para **desmontar**: painel → aba **Módulos** → **Desmontar em blocos**. Precisa estar parado,
+Para **desmontar**: painel → aba **Módulos** → **Desmontar em blocos**, ou olhe para o landship
+e aperte **J** duas vezes (em até 3 s; o primeiro toque só pede confirmação). Precisa estar parado,
 sem ninguém a bordo, com a caldeira fria e o casco 100 % reparado. O combustível e a fornalha
 voltam para você; a água do tanque se perde.
 
@@ -94,6 +96,9 @@ como blocos; o Baú de Carga como bloco funciona como um baú comum.
 | Fabric API | 0.162.0+26.3 ou mais novo |
 | GeckoLib (Fabric) | 5.5.7 ou mais novo |
 | Java | 25 |
+
+Idiomas: português do Brasil e de Portugal (mesmo texto) e inglês (EUA, Reino Unido,
+Austrália, Canadá e Nova Zelândia, mesmo texto).
 
 ## Instalar para jogar
 
@@ -130,8 +135,10 @@ python3 design/model/build_preview.py preview.html    # visualizador 3D no naveg
 ```
 
 O gerador falha se duas faces ficarem sobrepostas no mesmo plano (isso cintila no jogo).
-As texturas dos itens e dos blocos também são geradas por código:
+As texturas dos itens (32×32) e dos blocos também são geradas por código:
 `python3 design/textures/gen_item_textures.py` e `python3 design/textures/gen_block_textures.py`.
+Os itens usam o kit de `design/textures/pixelkit.py` (formas sombreadas com luz de cima à
+esquerda e contorno colorido) mais detalhes colocados à mão.
 Os sons dos apitos também: `python3 design/audio/gen_whistles.py` (precisa de numpy e ffmpeg).
 
 ## Desenvolvimento

@@ -13,7 +13,8 @@
 		"fabric-client-gametest": [
 			"io.github.projetosdehiago.vaportrilhos.test.LandshipClientGameTest",
 			"io.github.projetosdehiago.vaportrilhos.test.ModuleClientGameTest",
-			"io.github.projetosdehiago.vaportrilhos.test.AssemblyClientGameTest"
+			"io.github.projetosdehiago.vaportrilhos.test.AssemblyClientGameTest",
+			"io.github.projetosdehiago.vaportrilhos.test.CreativeTabClientGameTest"
 		]
 	},
 	"depends": {

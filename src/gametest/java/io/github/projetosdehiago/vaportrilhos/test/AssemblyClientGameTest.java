@@ -2,6 +2,7 @@ package io.github.projetosdehiago.vaportrilhos.test;
 
 import io.github.projetosdehiago.vaportrilhos.assembly.LandshipAssembly;
 import io.github.projetosdehiago.vaportrilhos.assembly.LandshipAssembly.Layout;
+import io.github.projetosdehiago.vaportrilhos.client.VaporTrilhosClient;
 import io.github.projetosdehiago.vaportrilhos.client.screen.LandshipScreen;
 import io.github.projetosdehiago.vaportrilhos.landship.LandshipEntity;
 import io.github.projetosdehiago.vaportrilhos.landship.LandshipMenu;
@@ -29,7 +30,8 @@ import net.minecraft.world.phys.Vec3;
 
 /**
  * Teste de cliente da montagem ({@code ./gradlew runClientGameTest}): o jogador monta o gabarito
- * clicando com a Chave de Caldeireiro no Leme e depois desmonta pelo painel.
+ * clicando com a Chave de Caldeireiro no Leme, desmonta pelo painel, monta de novo e desmonta
+ * pela tecla (dois toques, olhando para o landship).
  */
 public class AssemblyClientGameTest implements FabricClientGameTest {
 	private static final Direction FRONT = Direction.EAST;
@@ -69,24 +71,7 @@ public class AssemblyClientGameTest implements FabricClientGameTest {
 			context.takeScreenshot("assembly-1-template");
 
 			// olha exatamente para o leme e clica com a chave
-			context.runOnClient(minecraft -> {
-				Vec3 eye = minecraft.player.getEyePosition();
-				Vec3 target = Vec3.atCenterOf(helm);
-				Vec3 d = target.subtract(eye);
-				minecraft.player.setYRot((float) (Math.atan2(-d.x, d.z) * 180.0 / Math.PI));
-				minecraft.player.setXRot((float) (-Math.atan2(d.y, Math.sqrt(d.x * d.x + d.z * d.z)) * 180.0 / Math.PI));
-			});
-			context.waitTicks(2);
-			context.getInput().pressKey(options -> options.keyUse);
-			context.waitTicks(20);
-			LandshipEntity landship = singleplayer.getServer().computeOnServer(server -> {
-				List<LandshipEntity> found = player(server).level().getEntitiesOfClass(LandshipEntity.class, new AABB(helm).inflate(4), e -> true);
-				return found.isEmpty() ? null : found.getFirst();
-			});
-			if (landship == null) {
-				throw new AssertionError("a chave no leme devia montar o landship");
-			}
-			int landshipId = landship.getId();
+			int landshipId = clickHelm(context, singleplayer, helm);
 			boolean modulesOk = singleplayer.getServer().computeOnServer(server -> {
 				LandshipEntity l = (LandshipEntity) player(server).level().getEntity(landshipId);
 				return l.getModuleAt(ModuleSlot.FRONT_LEFT) == ModuleType.BED && l.getModuleAt(ModuleSlot.FRONT) == ModuleType.COMPACTOR
@@ -118,7 +103,61 @@ public class AssemblyClientGameTest implements FabricClientGameTest {
 				throw new AssertionError("o botão Desmontar devia trocar o landship pelos blocos");
 			}
 			context.takeScreenshot("assembly-4-disassembled");
+
+			// monta de novo e desmonta pela tecla, de fora, olhando para o casco
+			int again = clickHelm(context, singleplayer, helm);
+			Vec3 hull = singleplayer.getServer().computeOnServer(server -> {
+				ServerPlayer player = player(server);
+				LandshipEntity l = (LandshipEntity) player.level().getEntity(again);
+				player.teleportTo(player.level(), l.getX(), l.getY(), l.getZ() - 3.5, Set.of(), 0f, 20f, true);
+				return l.position().add(0.0, 0.8, 0.0);
+			});
+			context.waitTicks(10);
+			lookAt(context, hull);
+			context.waitTicks(2);
+			boolean aiming = context.computeOnClient(minecraft -> minecraft.crosshairPickEntity instanceof LandshipEntity);
+			if (!aiming) {
+				throw new AssertionError("a mira devia estar no landship");
+			}
+			context.getInput().pressKey(options -> VaporTrilhosClient.DISASSEMBLE);
+			context.waitTicks(10);
+			boolean stillThere = singleplayer.getServer().computeOnServer(server -> player(server).level().getEntity(again) != null);
+			if (!stillThere) {
+				throw new AssertionError("um toque só não pode desmontar (é preciso confirmar)");
+			}
+			context.takeScreenshot("assembly-5-key-confirm");
+			context.getInput().pressKey(options -> VaporTrilhosClient.DISASSEMBLE);
+			context.waitTicks(20);
+			boolean keyed = singleplayer.getServer().computeOnServer(server -> player(server).level().getBlockState(helm).is(ModBlocks.LANDSHIP_HELM)
+					&& player(server).level().getEntity(again) == null);
+			if (!keyed) {
+				throw new AssertionError("o segundo toque da tecla Desmontar devia trocar o landship pelos blocos");
+			}
 		}
+	}
+
+	/** Olha para o leme, clica com a chave e devolve o id do landship montado. */
+	private static int clickHelm(ClientGameTestContext context, TestSingleplayerContext singleplayer, BlockPos helm) {
+		lookAt(context, Vec3.atCenterOf(helm));
+		context.waitTicks(2);
+		context.getInput().pressKey(options -> options.keyUse);
+		context.waitTicks(20);
+		LandshipEntity landship = singleplayer.getServer().computeOnServer(server -> {
+			List<LandshipEntity> found = player(server).level().getEntitiesOfClass(LandshipEntity.class, new AABB(helm).inflate(4), e -> true);
+			return found.isEmpty() ? null : found.getFirst();
+		});
+		if (landship == null) {
+			throw new AssertionError("a chave no leme devia montar o landship");
+		}
+		return landship.getId();
+	}
+
+	private static void lookAt(ClientGameTestContext context, Vec3 target) {
+		context.runOnClient(minecraft -> {
+			Vec3 d = target.subtract(minecraft.player.getEyePosition());
+			minecraft.player.setYRot((float) (Math.atan2(-d.x, d.z) * 180.0 / Math.PI));
+			minecraft.player.setXRot((float) (-Math.atan2(d.y, Math.sqrt(d.x * d.x + d.z * d.z)) * 180.0 / Math.PI));
+		});
 	}
 
 	private static ServerPlayer player(MinecraftServer server) {

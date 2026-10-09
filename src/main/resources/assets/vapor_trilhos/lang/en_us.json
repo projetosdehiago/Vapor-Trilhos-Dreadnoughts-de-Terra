@@ -119,5 +119,8 @@
   "subtitles.vapor_trilhos.whistle.foghorn": "Landship foghorn",
   "subtitles.vapor_trilhos.whistle.bell": "Landship bell rings",
   "subtitles.vapor_trilhos.whistle.war_horn": "Landship war horn",
-  "subtitles.vapor_trilhos.whistle.custom": "Landship custom whistle"
+  "subtitles.vapor_trilhos.whistle.custom": "Landship custom whistle",
+  "key.vapor_trilhos.disassemble": "Disassemble landship (press twice)",
+  "message.vapor_trilhos.disassemble_confirm": "Press %s again to disassemble this landship into blocks",
+  "message.vapor_trilhos.disassemble_look": "Look at a landship to disassemble it"
 }
