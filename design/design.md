@@ -504,6 +504,8 @@ livre para todos os blocos antes de mexer em qualquer um.
 
 - **Data generation** (Fabric Data Generation API) para receitas, tags, loot tables, modelos e
   os dois arquivos de idioma (`en_us`, `pt_br`) — o CI garante que nada fica faltando.
+  Na hora de montar o `.jar`, o `pt_br` é copiado como `pt_pt` (português de Portugal) e o
+  `en_us` como `en_gb`, `en_au`, `en_ca` e `en_nz`: um texto só para manter por língua.
 - **Modelo da entidade com GeckoLib 5** (decisão do usuário): `landship.geo.json` +
   `landship.animation.json` + `landship.png` + `landship_glowmask.png`, gerados por
   `design/model/gen_landship.py` e copiados para `assets/vapor_trilhos/geckolib/models/entity/`,
@@ -680,9 +682,10 @@ Decisões e detalhes:
 - **Texturas dos blocos:** geradas por `design/textures/gen_block_textures.py`.
 
 Testes: 14 JUnit, 34 GameTests de servidor (9 da montagem: as 4 direções, módulos e baús,
-gabarito incompleto, baús demais, ida e volta, desmontagem recusada) e 3 GameTests de cliente
+gabarito incompleto, baús demais, ida e volta, desmontagem recusada) e 4 GameTests de cliente
 (o terceiro monta com um clique real da chave no leme, desmonta pelo painel, monta de novo e
-desmonta pela tecla J, conferindo que um toque só não desmonta).
+desmonta pela tecla J, conferindo que um toque só não desmonta; o quarto abre a aba do mod no
+criativo, tira um print e confere que as traduções copiadas chegaram ao jogo).
 
 ## B4. Plano de entregas
 

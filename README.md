@@ -97,6 +97,9 @@ como blocos; o Baú de Carga como bloco funciona como um baú comum.
 | GeckoLib (Fabric) | 5.5.7 ou mais novo |
 | Java | 25 |
 
+Idiomas: português do Brasil e de Portugal (mesmo texto) e inglês (EUA, Reino Unido,
+Austrália, Canadá e Nova Zelândia, mesmo texto).
+
 ## Instalar para jogar
 
 1. Instale o [Fabric Loader](https://fabricmc.net/use/) para o Minecraft 26.3.
