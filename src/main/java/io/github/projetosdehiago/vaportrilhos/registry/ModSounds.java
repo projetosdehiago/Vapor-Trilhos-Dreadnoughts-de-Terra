@@ -6,7 +6,10 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundEvent;
 
-/** Eventos de som próprios; quase todos os áudios são do jogo base (ver assets/vapor_trilhos/sounds.json). */
+/**
+ * Eventos de som próprios (ver assets/vapor_trilhos/sounds.json). Os apitos têm áudios do mod
+ * (sintetizados em design/audio/, mais o personalizado); os outros usam áudios do jogo base.
+ */
 public final class ModSounds {
 	private ModSounds() {
 	}
@@ -21,7 +24,6 @@ public final class ModSounds {
 	public static final SoundEvent WHISTLE_FOGHORN = register("whistle.foghorn");
 	public static final SoundEvent WHISTLE_BELL = register("whistle.bell");
 	public static final SoundEvent WHISTLE_WAR_HORN = register("whistle.war_horn");
-	/** O único áudio que vem no mod (os outros são do jogo base). */
 	public static final SoundEvent WHISTLE_CUSTOM = register("whistle.custom");
 	public static final SoundEvent REPAIR = register("repair");
 

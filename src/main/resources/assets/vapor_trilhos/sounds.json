@@ -71,10 +71,7 @@
   "whistle": {
     "subtitle": "subtitles.vapor_trilhos.whistle",
     "sounds": [
-      {
-        "name": "minecraft:item/goat_horn/call1",
-        "pitch": 1.3
-      }
+      "vapor_trilhos:whistle/steam"
     ]
   },
   "repair": {
@@ -96,30 +93,19 @@
   "whistle.foghorn": {
     "subtitle": "subtitles.vapor_trilhos.whistle.foghorn",
     "sounds": [
-      {
-        "name": "minecraft:item/goat_horn/call5",
-        "pitch": 0.6
-      },
-      {
-        "name": "minecraft:item/goat_horn/call7",
-        "pitch": 0.6
-      }
+      "vapor_trilhos:whistle/foghorn"
     ]
   },
   "whistle.bell": {
     "subtitle": "subtitles.vapor_trilhos.whistle.bell",
     "sounds": [
-      "minecraft:block/bell/bell_use01",
-      "minecraft:block/bell/bell_use02"
+      "vapor_trilhos:whistle/bell"
     ]
   },
   "whistle.war_horn": {
     "subtitle": "subtitles.vapor_trilhos.whistle.war_horn",
     "sounds": [
-      "minecraft:event/raid/raidhorn_01",
-      "minecraft:event/raid/raidhorn_02",
-      "minecraft:event/raid/raidhorn_03",
-      "minecraft:event/raid/raidhorn_04"
+      "vapor_trilhos:whistle/war_horn"
     ]
   },
   "whistle.custom": {

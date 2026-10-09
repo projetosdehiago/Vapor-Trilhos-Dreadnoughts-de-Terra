@@ -6,14 +6,15 @@ import net.minecraft.sounds.SoundEvent;
 
 /**
  * Opções de apito do landship (tecla H). Cada landship guarda a sua; todos por perto ouvem.
- * A recarga acompanha a duração do som, para um não tocar por cima do outro.
+ * A recarga acompanha a duração do som, para um não tocar por cima do outro. Os quatro primeiros
+ * são sintetizados por {@code design/audio/gen_whistles.py}; o personalizado é um áudio enviado.
  */
 public enum WhistleSound {
-	STEAM(20),
-	FOGHORN(40),
-	BELL(30),
-	WAR_HORN(100),
-	/** Áudio próprio do mod ({@code sounds/whistle/gemidao.ogg}). */
+	STEAM(50),
+	FOGHORN(70),
+	BELL(80),
+	WAR_HORN(60),
+	/** Áudio enviado pelo usuário ({@code sounds/whistle/gemidao.ogg}). */
 	CUSTOM(140);
 
 	public final int cooldownTicks;
