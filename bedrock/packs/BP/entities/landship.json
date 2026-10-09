@@ -1,0 +1,187 @@
+{
+  "format_version": "1.21.90",
+  "minecraft:entity": {
+    "description": {
+      "identifier": "vapor_trilhos:landship",
+      "is_spawnable": false,
+      "is_summonable": true,
+      "properties": {
+        "vapor_trilhos:track_left": {
+          "type": "int",
+          "range": [
+            -1,
+            1
+          ],
+          "default": 0,
+          "client_sync": true
+        },
+        "vapor_trilhos:track_right": {
+          "type": "int",
+          "range": [
+            -1,
+            1
+          ],
+          "default": 0,
+          "client_sync": true
+        },
+        "vapor_trilhos:working": {
+          "type": "bool",
+          "default": false,
+          "client_sync": true
+        },
+        "vapor_trilhos:venting": {
+          "type": "bool",
+          "default": false,
+          "client_sync": true
+        }
+      }
+    },
+    "components": {
+      "minecraft:type_family": {
+        "family": [
+          "landship",
+          "inanimate"
+        ]
+      },
+      "minecraft:collision_box": {
+        "width": 2.9,
+        "height": 2.0
+      },
+      "minecraft:is_collidable": {},
+      "minecraft:physics": {
+        "has_gravity": true,
+        "has_collision": true
+      },
+      "minecraft:pushable": {
+        "is_pushable": false,
+        "is_pushable_by_piston": false
+      },
+      "minecraft:knockback_resistance": {
+        "value": 1.0
+      },
+      "minecraft:fire_immune": {},
+      "minecraft:persistent": {},
+      "minecraft:nameable": {
+        "always_show": false,
+        "allow_name_tag_renaming": true
+      },
+      "minecraft:health": {
+        "value": 1000000,
+        "max": 1000000
+      },
+      "minecraft:damage_sensor": {
+        "triggers": [
+          {
+            "cause": "fall",
+            "deals_damage": "no"
+          },
+          {
+            "cause": "fire",
+            "deals_damage": "no"
+          },
+          {
+            "cause": "fire_tick",
+            "deals_damage": "no"
+          },
+          {
+            "cause": "lava",
+            "deals_damage": "no"
+          },
+          {
+            "cause": "magma",
+            "deals_damage": "no"
+          },
+          {
+            "cause": "drowning",
+            "deals_damage": "no"
+          },
+          {
+            "cause": "suffocation",
+            "deals_damage": "no"
+          },
+          {
+            "cause": "freezing",
+            "deals_damage": "no"
+          },
+          {
+            "cause": "contact",
+            "deals_damage": "no"
+          },
+          {
+            "cause": "fly_into_wall",
+            "deals_damage": "no"
+          },
+          {
+            "cause": "campfire",
+            "deals_damage": "no"
+          },
+          {
+            "cause": "soul_campfire",
+            "deals_damage": "no"
+          },
+          {
+            "cause": "temperature",
+            "deals_damage": "no"
+          },
+          {
+            "cause": "wither",
+            "deals_damage": "no"
+          },
+          {
+            "cause": "magic",
+            "deals_damage": "no"
+          },
+          {
+            "cause": "starve",
+            "deals_damage": "no"
+          }
+        ]
+      },
+      "minecraft:rideable": {
+        "seat_count": 3,
+        "controlling_seat": 0,
+        "crouching_skip_interact": false,
+        "pull_in_entities": false,
+        "rider_can_interact": true,
+        "family_types": [
+          "player"
+        ],
+        "interact_text": "action.interact.vapor_trilhos.board",
+        "seats": [
+          {
+            "position": [
+              0,
+              0.85,
+              0.69
+            ],
+            "min_rider_count": 0,
+            "max_rider_count": 3
+          },
+          {
+            "position": [
+              0.25,
+              0.85,
+              0.06
+            ],
+            "min_rider_count": 0,
+            "max_rider_count": 3
+          },
+          {
+            "position": [
+              -0.25,
+              0.85,
+              0.06
+            ],
+            "min_rider_count": 0,
+            "max_rider_count": 3
+          }
+        ]
+      },
+      "minecraft:inventory": {
+        "container_type": "minecart_hopper",
+        "inventory_size": 5,
+        "private": false
+      }
+    }
+  }
+}

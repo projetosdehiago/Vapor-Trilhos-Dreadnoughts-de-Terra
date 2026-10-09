@@ -1,0 +1,19 @@
+{
+  "format_version": "1.21.90",
+  "minecraft:item": {
+    "description": {
+      "identifier": "vapor_trilhos:boilermaker_wrench",
+      "menu_category": {
+        "category": "equipment"
+      }
+    },
+    "components": {
+      "minecraft:icon": "vapor_trilhos_boilermaker_wrench",
+      "minecraft:display_name": {
+        "value": "item.vapor_trilhos.boilermaker_wrench"
+      },
+      "minecraft:max_stack_size": 1,
+      "minecraft:hand_equipped": true
+    }
+  }
+}

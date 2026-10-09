@@ -1,0 +1,24 @@
+{
+  "resource_pack_name": "vapor_trilhos",
+  "texture_name": "atlas.items",
+  "texture_data": {
+    "vapor_trilhos_landship": {
+      "textures": "textures/items/vapor_trilhos/landship"
+    },
+    "vapor_trilhos_reinforced_track": {
+      "textures": "textures/items/vapor_trilhos/reinforced_track"
+    },
+    "vapor_trilhos_steam_boiler": {
+      "textures": "textures/items/vapor_trilhos/steam_boiler"
+    },
+    "vapor_trilhos_repair_kit": {
+      "textures": "textures/items/vapor_trilhos/repair_kit"
+    },
+    "vapor_trilhos_boilermaker_wrench": {
+      "textures": "textures/items/vapor_trilhos/boilermaker_wrench"
+    },
+    "vapor_trilhos_command_panel": {
+      "textures": "textures/items/vapor_trilhos/command_panel"
+    }
+  }
+}

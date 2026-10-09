@@ -1,15 +1,17 @@
 # Vapor & Trilhos: Dreadnoughts de Terra — Documento de Design
 
-> **Status:** v0.4 — arquitetura aprovada; Fases 1 (núcleo), 2 (módulos) e 3 (montagem) implementadas (ver B5).
-> Este documento é a fonte para a versão Java (Fabric) **e** para uma futura versão Bedrock.
-> Por isso ele é dividido em duas partes:
+> **Status:** v0.5 — Java: Fases 1 (núcleo), 2 (módulos) e 3 (montagem) implementadas (ver B5).
+> Bedrock: Fase B1 (landship e caldeira) implementada (ver C5).
+> Este documento é a fonte para a versão Java (Fabric) **e** para a versão Bedrock.
+> Por isso ele é dividido em três partes:
 >
 > - **Parte A — Ideia (independente de plataforma):** conceito, regras, números e receitas.
 >   Tudo aqui é expresso em blocos, segundos, °C, bar e mB, sem citar APIs.
 > - **Parte B — Implementação Java:** como a Parte A vira código no Fabric 26.3.
+> - **Parte C — Implementação Bedrock:** como a Parte A vira um add-on (pasta `bedrock/`).
 >
-> Se a Parte A mudar, a Parte B deve acompanhar. A Parte B nunca deve introduzir regra de jogo
-> que não esteja na Parte A.
+> Se a Parte A mudar, as Partes B e C devem acompanhar. Elas nunca devem introduzir regra de
+> jogo que não esteja na Parte A; o que muda por limite da plataforma fica anotado em C2.
 
 ---
 
@@ -698,3 +700,81 @@ criativo, tira um print e confere que as traduções copiadas chegaram ao jogo).
 | 2 | `feat/fase-2-modulos` | Cama, baús, fornalha, compactador, painel com abas |
 | 3 | `feat/fase-3-montagem` | Blocos, gabarito, montagem/desmontagem |
 | — | release | README final + GitHub Release com o `.jar` |
+
+---
+
+# PARTE C — IMPLEMENTAÇÃO BEDROCK (add-on)
+
+## C1. Versões e ferramentas (pesquisa em 2026-10-09)
+
+| Item | Versão |
+|---|---|
+| Minecraft Bedrock | 26.50 (motor 1.26.50) — `min_engine_version` dos manifestos |
+| `@minecraft/server` | 2.10.0 (estável) |
+| `@minecraft/server-ui` | 2.2.0 (estável; formulários com dados ao vivo, "DDUI") |
+| Linguagem | TypeScript, empacotado com esbuild num único `scripts/main.js` |
+| Testes | Vitest (lógica pura: caldeira e direção) + `scripts/check.mjs` (referências entre arquivos) |
+
+Só APIs **estáveis**: nada de "Beta APIs" nem "Recursos experimentais", para funcionar em
+qualquer mundo, servidor e Realm. Plataformas-alvo: PC (Windows) e celular/tablet.
+
+Estrutura de `bedrock/`:
+
+| Caminho | Conteúdo |
+|---|---|
+| `src/boiler/` | Tradução direta de `BoilerSimulation`/`BalanceConstants`/`Damper`/`BoilerState` |
+| `src/landship/drive.ts` | Direção (A4) sem depender do jogo, testável |
+| `src/landship/landship.ts` | Estado por landship, tick, movimento, desgaste, efeitos |
+| `src/landship/{interact,item,panel,hud,whistle}.ts` | Interação, colocar/recolher, painel, medidores, apitos |
+| `packs/BP`, `packs/RP` | Pacotes de comportamento e de recursos (só o que é exclusivo do Bedrock) |
+| `scripts/build.mjs` | Compila, copia os recursos compartilhados e gera `dist/vapor-trilhos-bedrock-<versão>.mcaddon` |
+| `scripts/check.mjs` | Confere manifestos, traduções, ícones, sons, partículas, animações e peças do modelo |
+
+Recursos compartilhados com o Java (copiados pelo build, nunca duplicados no repositório):
+modelo e animações de `design/model/`, texturas dos itens e sons dos apitos dos assets do mod.
+Idiomas: `pt_BR` e `en_US`; o build copia o primeiro como `pt_PT` e o segundo como `en_GB`.
+
+## C2. Adaptações por limite da plataforma
+
+| Parte A | Limite do Bedrock | Como ficou |
+|---|---|---|
+| Teclas R, V, H (A2.1) | Add-ons não registram teclas | Item **Painel de Comando** (` G ` / `CRC`: vidro, cobre, redstone): usar abre o painel com Abafador, Válvula de alívio, Apito e Acender/Apagar. **Pular enquanto pilota = apito.** Funciona igual no celular |
+| Painel com espaços de itens | O formulário de script não mostra espaços | Painel = formulário com medidores ao vivo e botões; o combustível fica no **inventário do veículo** (abrir o inventário a bordo), 5 espaços em vez de 3 |
+| HUD com medidores | Sem HUD personalizada | Linha na barra de ação para quem está a bordo (pressão com barra colorida, temperatura, água, fogo, casco), a cada 5 ticks |
+| Direção A/D gira no lugar | O "rideable" padrão segue o olhar do piloto | O script lê o WASD do piloto (`inputInfo.getMovementVector()`) e aplica a mesma conta do Java (`drive.ts`) |
+| Teto que carrega quem está em cima | Entidade sólida não carrega jogadores | O script empurra quem está no teto pelo mesmo deslocamento/giro do casco (`applyKnockback`), pode ser menos suave que no Java |
+| Fumaça invisível para quem está a bordo | — | Partículas mandadas só para quem não está no veículo (`player.spawnParticle`) |
+| Garrafa d'água | O Bedrock não diz se a poção é água de forma garantida | Reconhece a garrafa pelo tipo da poção; o balde sempre funciona |
+| Tempo de queima | Não é exposto para scripts | Tabela da fornalha comum (`game/items.ts`) |
+
+## C3. Desenho técnico
+
+- **Entidade** `vapor_trilhos:landship`: caixa de colisão 2,9 × 2 (sólida, dá para ficar em cima),
+  física do jogo (gravidade e colisão), 3 assentos (o primeiro é o do piloto), inventário de 5
+  espaços para combustível, imune a fogo/queda/afogamento (o script trata queda e lava pela A5).
+- **Movimento:** a cada tick, `step()` (a mesma conta do Java) dá a velocidade e o giro; o
+  script gira a entidade e troca a velocidade horizontal (`clearVelocity` + `applyImpulse`),
+  mantendo a vertical para a gravidade. Se a frente bloqueia e há espaço, sobe 1 bloco (degrau).
+- **Integridade:** guardada pelo script. A "vida" da entidade é só um amortecedor enorme: o dano
+  do jogo (ataques ×1, explosões ×2) vira desgaste e a vida volta ao máximo.
+- **Dados salvos** em propriedades dinâmicas: caldeira (JSON compacto), integridade e apito. O
+  item Landship guarda integridade e água quando recolhido.
+- **Animações:** propriedades da entidade (`track_left`, `track_right`, `working`, `venting`)
+  ligam os controles de animação do pacote de recursos; os encaixes de módulo ficam ocultos.
+- **Partículas próprias** (`steam_burst`, `steam_puff`, `chimney_smoke`, `black_smoke`) com a
+  textura de fumaça do jogo.
+
+## C4. Testes
+
+- `npm test`: os mesmos casos de `BoilerSimulationTest.java` + direção (aceleração, ré, giro,
+  terreno, conversão do analógico).
+- `npm run check`: referências entre arquivos do add-on montado.
+- **No jogo** (não dá para rodar o Bedrock no CI): roteiro de teste em cada PR.
+
+## C5. Estado
+
+| Fase | Entrega | Estado |
+|---|---|---|
+| B1 | Landship, caldeira, direção, vapor cegante, desgaste/reparo, HUD, painel, apitos, colocar/recolher, receitas | implementada (aguardando teste no jogo) |
+| B2 | Módulos (cama por script, baús, fornalha, compactador) | a fazer |
+| B3 | Montagem com blocos | a fazer |

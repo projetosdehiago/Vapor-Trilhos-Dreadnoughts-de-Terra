@@ -1,0 +1,46 @@
+{
+  "format_version": 2,
+  "header": {
+    "name": "pack.name",
+    "description": "pack.description",
+    "uuid": "86db8438-c33e-46cb-aa9b-a27fb4d87d27",
+    "version": [
+      1,
+      0,
+      0
+    ],
+    "min_engine_version": [
+      1,
+      26,
+      50
+    ]
+  },
+  "modules": [
+    {
+      "type": "resources",
+      "uuid": "50b06c10-f88c-4085-9001-d84b96ca7c4f",
+      "version": [
+        1,
+        0,
+        0
+      ]
+    }
+  ],
+  "dependencies": [
+    {
+      "uuid": "023b648c-b1a0-4c2a-b139-0aeb3de67d8e",
+      "version": [
+        1,
+        0,
+        0
+      ]
+    }
+  ],
+  "metadata": {
+    "authors": [
+      "projetosdehiago"
+    ],
+    "license": "MIT",
+    "url": "https://github.com/projetosdehiago/Vapor-Trilhos-Dreadnoughts-de-Terra"
+  }
+}

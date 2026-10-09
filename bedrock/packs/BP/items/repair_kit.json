@@ -1,0 +1,18 @@
+{
+  "format_version": "1.21.90",
+  "minecraft:item": {
+    "description": {
+      "identifier": "vapor_trilhos:repair_kit",
+      "menu_category": {
+        "category": "items"
+      }
+    },
+    "components": {
+      "minecraft:icon": "vapor_trilhos_repair_kit",
+      "minecraft:display_name": {
+        "value": "item.vapor_trilhos.repair_kit"
+      },
+      "minecraft:max_stack_size": 16
+    }
+  }
+}

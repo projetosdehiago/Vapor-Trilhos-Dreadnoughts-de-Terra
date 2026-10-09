@@ -1,0 +1,67 @@
+## Vapor & Trilhos: Dreadnoughts de Terra (Bedrock) - English texts
+pack.name=Vapor & Trilhos (resources)
+pack.description=Tracked steam landships: model, textures and sounds.
+
+entity.vapor_trilhos:landship.name=Landship
+action.interact.vapor_trilhos.board=Board
+
+item.vapor_trilhos.landship=Landship (Basic Cab)
+item.vapor_trilhos.reinforced_track=Reinforced Track
+item.vapor_trilhos.steam_boiler=Steam Boiler
+item.vapor_trilhos.repair_kit=Repair Kit
+item.vapor_trilhos.boilermaker_wrench=Boilermaker's Wrench
+item.vapor_trilhos.command_panel=Command Panel
+
+vapor_trilhos.damper.closed=Closed
+vapor_trilhos.damper.normal=Normal
+vapor_trilhos.damper.open=Open
+
+vapor_trilhos.whistle.steam=Steam whistle
+vapor_trilhos.whistle.foghorn=Foghorn
+vapor_trilhos.whistle.bell=Ship's bell
+vapor_trilhos.whistle.war_horn=War horn
+vapor_trilhos.whistle.custom=Custom: gemidão
+
+vapor_trilhos.hud=§7Pressure §r%s bar %s §7| §r%s °C §7| Water §b%s §7| %s §7| Hull %s
+vapor_trilhos.hud.fire_on=§6Fire %s %s
+vapor_trilhos.hud.fire_off=§8Fire out
+
+vapor_trilhos.panel.title=Landship Panel
+vapor_trilhos.panel.pressure=Pressure: %s bar (%s)
+vapor_trilhos.panel.status_low=too low to drive
+vapor_trilhos.panel.status_ok=good
+vapor_trilhos.panel.status_red=§cred zone§r
+vapor_trilhos.panel.status_danger=§csafety valve about to blow!§r
+vapor_trilhos.panel.temperature=Temperature: %s °C
+vapor_trilhos.panel.water=Water: %s of %s buckets
+vapor_trilhos.panel.fire_on=Fire: lit, damper %s, current item %s
+vapor_trilhos.panel.fire_off=Fire: out
+vapor_trilhos.panel.integrity=Hull: %s
+vapor_trilhos.panel.whistle_sound=Whistle sound
+vapor_trilhos.panel.fuel_hint=Fuel: while aboard, open your inventory to see the bunker. From outside, use coal, wood or another fuel on the landship.
+
+vapor_trilhos.button.ignite=Light the fire
+vapor_trilhos.button.extinguish=Put out the fire
+vapor_trilhos.button.damper=Damper: %s
+vapor_trilhos.button.vent=Relief valve (−2 bar)
+vapor_trilhos.button.whistle=Blow whistle
+
+vapor_trilhos.message.already_lit=The fire is already lit
+vapor_trilhos.message.no_fuel=No fuel in the bunker
+vapor_trilhos.message.damper=Damper: %s
+vapor_trilhos.message.vent_not_ready=The relief valve is still recharging
+vapor_trilhos.message.whistle_selected=Whistle: %s
+vapor_trilhos.message.too_hot_to_repair=Too hot to repair: put water in the boiler first
+vapor_trilhos.message.needs_metal=Wood only patches up to %s: use iron or copper
+vapor_trilhos.message.fully_repaired=The hull is already intact
+vapor_trilhos.message.integrity=Hull: %s
+vapor_trilhos.message.water_full=The tank is full
+vapor_trilhos.message.fuel_full=The fuel bunker is full
+vapor_trilhos.message.no_room=No room: the landship needs 3 × 3 free blocks, 2 high
+vapor_trilhos.message.pickup_occupied=Everyone must leave the landship first
+vapor_trilhos.message.pickup_hot=Put out the fire and let the boiler cool down (60 °C or less)
+vapor_trilhos.message.too_far=Too far from the landship
+vapor_trilhos.message.look_at_landship=Board or look at a landship to open the panel
+
+vapor_trilhos.lore.integrity=§7Hull: %s
+vapor_trilhos.lore.water=§7Water: %s buckets

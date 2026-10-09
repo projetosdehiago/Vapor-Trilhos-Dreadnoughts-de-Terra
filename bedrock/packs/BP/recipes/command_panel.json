@@ -1,0 +1,30 @@
+{
+  "format_version": "1.21.90",
+  "minecraft:recipe_shaped": {
+    "description": {
+      "identifier": "vapor_trilhos:command_panel"
+    },
+    "tags": [
+      "crafting_table"
+    ],
+    "pattern": [
+      " G ",
+      "CRC"
+    ],
+    "key": {
+      "G": {
+        "item": "minecraft:glass_pane"
+      },
+      "C": {
+        "item": "minecraft:copper_ingot"
+      },
+      "R": {
+        "item": "minecraft:redstone"
+      }
+    },
+    "result": {
+      "item": "vapor_trilhos:command_panel",
+      "count": 1
+    }
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "format_version": "1.21.90",
+  "minecraft:item": {
+    "description": {
+      "identifier": "vapor_trilhos:steam_boiler",
+      "menu_category": {
+        "category": "items"
+      }
+    },
+    "components": {
+      "minecraft:icon": "vapor_trilhos_steam_boiler",
+      "minecraft:display_name": {
+        "value": "item.vapor_trilhos.steam_boiler"
+      },
+      "minecraft:max_stack_size": 64
+    }
+  }
+}

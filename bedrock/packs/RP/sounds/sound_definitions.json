@@ -1,0 +1,65 @@
+{
+  "format_version": "1.20.20",
+  "sound_definitions": {
+    "vapor_trilhos.whistle.steam": {
+      "category": "neutral",
+      "min_distance": 4,
+      "max_distance": 96,
+      "sounds": [
+        {
+          "name": "sounds/vapor_trilhos/whistle/steam",
+          "volume": 1,
+          "load_on_low_memory": true
+        }
+      ]
+    },
+    "vapor_trilhos.whistle.foghorn": {
+      "category": "neutral",
+      "min_distance": 4,
+      "max_distance": 96,
+      "sounds": [
+        {
+          "name": "sounds/vapor_trilhos/whistle/foghorn",
+          "volume": 1,
+          "load_on_low_memory": true
+        }
+      ]
+    },
+    "vapor_trilhos.whistle.bell": {
+      "category": "neutral",
+      "min_distance": 4,
+      "max_distance": 96,
+      "sounds": [
+        {
+          "name": "sounds/vapor_trilhos/whistle/bell",
+          "volume": 1,
+          "load_on_low_memory": true
+        }
+      ]
+    },
+    "vapor_trilhos.whistle.war_horn": {
+      "category": "neutral",
+      "min_distance": 4,
+      "max_distance": 96,
+      "sounds": [
+        {
+          "name": "sounds/vapor_trilhos/whistle/war_horn",
+          "volume": 1,
+          "load_on_low_memory": true
+        }
+      ]
+    },
+    "vapor_trilhos.whistle.custom": {
+      "category": "neutral",
+      "min_distance": 4,
+      "max_distance": 96,
+      "sounds": [
+        {
+          "name": "sounds/vapor_trilhos/whistle/gemidao",
+          "volume": 1,
+          "load_on_low_memory": true
+        }
+      ]
+    }
+  }
+}

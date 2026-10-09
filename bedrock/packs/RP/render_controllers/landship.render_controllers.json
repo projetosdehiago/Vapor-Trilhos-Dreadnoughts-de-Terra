@@ -1,0 +1,102 @@
+{
+  "format_version": "1.10.0",
+  "render_controllers": {
+    "controller.render.vapor_trilhos.landship": {
+      "geometry": "Geometry.default",
+      "materials": [
+        {
+          "*": "Material.default"
+        }
+      ],
+      "textures": [
+        "Texture.default"
+      ],
+      "part_visibility": [
+        {
+          "*": true
+        },
+        {
+          "slot_fl": false
+        },
+        {
+          "slot_fl_bed": false
+        },
+        {
+          "slot_fl_cargo": false
+        },
+        {
+          "slot_fl_furnace": false
+        },
+        {
+          "slot_fr": false
+        },
+        {
+          "slot_fr_bed": false
+        },
+        {
+          "slot_fr_cargo": false
+        },
+        {
+          "slot_fr_furnace": false
+        },
+        {
+          "slot_ml": false
+        },
+        {
+          "slot_ml_bed": false
+        },
+        {
+          "slot_ml_cargo": false
+        },
+        {
+          "slot_ml_furnace": false
+        },
+        {
+          "slot_mr": false
+        },
+        {
+          "slot_mr_bed": false
+        },
+        {
+          "slot_mr_cargo": false
+        },
+        {
+          "slot_mr_furnace": false
+        },
+        {
+          "slot_rl": false
+        },
+        {
+          "slot_rl_bed": false
+        },
+        {
+          "slot_rl_cargo": false
+        },
+        {
+          "slot_rl_furnace": false
+        },
+        {
+          "slot_rr": false
+        },
+        {
+          "slot_rr_bed": false
+        },
+        {
+          "slot_rr_cargo": false
+        },
+        {
+          "slot_rr_furnace": false
+        },
+        {
+          "slot_front": false
+        },
+        {
+          "slot_front_compactor": false
+        },
+        {
+          "roller": false
+        }
+      ]
+    }
+  }
+}

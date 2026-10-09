@@ -1,0 +1,28 @@
+{
+  "format_version": "1.21.90",
+  "minecraft:recipe_shaped": {
+    "description": {
+      "identifier": "vapor_trilhos:boilermaker_wrench"
+    },
+    "tags": [
+      "crafting_table"
+    ],
+    "pattern": [
+      " I ",
+      " CI",
+      "I  "
+    ],
+    "key": {
+      "I": {
+        "item": "minecraft:iron_ingot"
+      },
+      "C": {
+        "item": "minecraft:copper_ingot"
+      }
+    },
+    "result": {
+      "item": "vapor_trilhos:boilermaker_wrench",
+      "count": 1
+    }
+  }
+}

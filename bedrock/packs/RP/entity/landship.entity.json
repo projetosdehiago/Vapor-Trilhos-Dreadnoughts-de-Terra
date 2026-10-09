@@ -1,0 +1,41 @@
+{
+  "format_version": "1.10.0",
+  "minecraft:client_entity": {
+    "description": {
+      "identifier": "vapor_trilhos:landship",
+      "materials": {
+        "default": "entity_alphatest"
+      },
+      "textures": {
+        "default": "textures/entity/vapor_trilhos/landship"
+      },
+      "geometry": {
+        "default": "geometry.vapor_trilhos.landship"
+      },
+      "animations": {
+        "track_left_forward": "animation.landship.track_left.forward",
+        "track_left_reverse": "animation.landship.track_left.reverse",
+        "track_right_forward": "animation.landship.track_right.forward",
+        "track_right_reverse": "animation.landship.track_right.reverse",
+        "engine_idle": "animation.landship.engine.idle",
+        "engine_working": "animation.landship.engine.working",
+        "vent": "animation.landship.boiler.vent",
+        "ctrl_track_left": "controller.animation.vapor_trilhos.landship.track_left",
+        "ctrl_track_right": "controller.animation.vapor_trilhos.landship.track_right",
+        "ctrl_engine": "controller.animation.vapor_trilhos.landship.engine",
+        "ctrl_vent": "controller.animation.vapor_trilhos.landship.vent"
+      },
+      "scripts": {
+        "animate": [
+          "ctrl_track_left",
+          "ctrl_track_right",
+          "ctrl_engine",
+          "ctrl_vent"
+        ]
+      },
+      "render_controllers": [
+        "controller.render.vapor_trilhos.landship"
+      ]
+    }
+  }
+}

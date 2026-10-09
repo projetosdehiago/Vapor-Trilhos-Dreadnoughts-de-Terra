@@ -1,0 +1,31 @@
+{
+  "format_version": "1.21.90",
+  "minecraft:recipe_shaped": {
+    "description": {
+      "identifier": "vapor_trilhos:reinforced_track"
+    },
+    "tags": [
+      "crafting_table"
+    ],
+    "pattern": [
+      "ILI",
+      "LNL",
+      "ILI"
+    ],
+    "key": {
+      "I": {
+        "item": "minecraft:iron_ingot"
+      },
+      "L": {
+        "tag": "minecraft:logs"
+      },
+      "N": {
+        "item": "minecraft:iron_nugget"
+      }
+    },
+    "result": {
+      "item": "vapor_trilhos:reinforced_track",
+      "count": 2
+    }
+  }
+}
