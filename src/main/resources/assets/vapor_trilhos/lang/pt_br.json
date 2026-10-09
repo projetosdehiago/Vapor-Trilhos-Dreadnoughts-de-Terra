@@ -46,5 +46,7 @@
   "subtitles.vapor_trilhos.boiler.fill": "Água despejada na caldeira",
   "subtitles.vapor_trilhos.engine.chug": "Máquina a vapor trabalha",
   "subtitles.vapor_trilhos.whistle": "Apito do landship",
-  "subtitles.vapor_trilhos.repair": "Landship consertado"
+  "subtitles.vapor_trilhos.repair": "Landship consertado",
+  "tag.item.vapor_trilhos.repair.wood_small": "Reparo de Landship: Madeira Pequena",
+  "tag.item.vapor_trilhos.repair.wood_large": "Reparo de Landship: Madeira Grande"
 }

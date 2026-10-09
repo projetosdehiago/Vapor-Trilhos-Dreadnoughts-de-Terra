@@ -46,5 +46,7 @@
   "subtitles.vapor_trilhos.boiler.fill": "Water poured into boiler",
   "subtitles.vapor_trilhos.engine.chug": "Steam engine chugs",
   "subtitles.vapor_trilhos.whistle": "Landship whistle",
-  "subtitles.vapor_trilhos.repair": "Landship repaired"
+  "subtitles.vapor_trilhos.repair": "Landship repaired",
+  "tag.item.vapor_trilhos.repair.wood_small": "Landship Repair: Small Wood",
+  "tag.item.vapor_trilhos.repair.wood_large": "Landship Repair: Large Wood"
 }
