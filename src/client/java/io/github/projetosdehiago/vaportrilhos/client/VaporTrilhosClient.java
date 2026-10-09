@@ -28,6 +28,7 @@ public final class VaporTrilhosClient implements ClientModInitializer {
 	public static final KeyMapping DAMPER = key("damper", InputConstants.KEY_R);
 	public static final KeyMapping VENT = key("vent", InputConstants.KEY_V);
 	public static final KeyMapping WHISTLE = key("whistle", InputConstants.KEY_H);
+	public static final KeyMapping COMPACTOR = key("compactor", InputConstants.KEY_C);
 
 	private static KeyMapping key(String name, int defaultKey) {
 		return new KeyMapping("key.vapor_trilhos." + name, defaultKey, CATEGORY);
@@ -44,6 +45,7 @@ public final class VaporTrilhosClient implements ClientModInitializer {
 		KeyMappingHelper.registerKeyMapping(DAMPER);
 		KeyMappingHelper.registerKeyMapping(VENT);
 		KeyMappingHelper.registerKeyMapping(WHISTLE);
+		KeyMappingHelper.registerKeyMapping(COMPACTOR);
 		HudElementRegistry.attachElementAfter(VanillaHudElements.HOTBAR, VaporTrilhos.id("landship_gauges"), new LandshipHud());
 
 		ClientTickEvents.START_CLIENT_TICK.register(VaporTrilhosClient::beforeTick);
@@ -67,6 +69,9 @@ public final class VaporTrilhosClient implements ClientModInitializer {
 		while (WHISTLE.consumeClick()) {
 			ClientPlayNetworking.send(new LandshipActionPayload(LandshipActionPayload.Action.WHISTLE));
 		}
+		while (COMPACTOR.consumeClick()) {
+			ClientPlayNetworking.send(new LandshipActionPayload(LandshipActionPayload.Action.TOGGLE_COMPACTOR));
+		}
 	}
 
 	private static void consumeAll() {
@@ -77,6 +82,9 @@ public final class VaporTrilhosClient implements ClientModInitializer {
 			// idem
 		}
 		while (WHISTLE.consumeClick()) {
+			// idem
+		}
+		while (COMPACTOR.consumeClick()) {
 			// idem
 		}
 	}

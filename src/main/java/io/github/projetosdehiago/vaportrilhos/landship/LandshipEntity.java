@@ -14,6 +14,12 @@ import io.github.projetosdehiago.vaportrilhos.boiler.BalanceConstants;
 import io.github.projetosdehiago.vaportrilhos.boiler.BoilerSimulation;
 import io.github.projetosdehiago.vaportrilhos.boiler.BoilerState;
 import io.github.projetosdehiago.vaportrilhos.boiler.Damper;
+import io.github.projetosdehiago.vaportrilhos.module.Compactor;
+import io.github.projetosdehiago.vaportrilhos.module.FurnaceModule;
+import io.github.projetosdehiago.vaportrilhos.module.LandshipBed;
+import io.github.projetosdehiago.vaportrilhos.module.LandshipModules;
+import io.github.projetosdehiago.vaportrilhos.module.ModuleSlot;
+import io.github.projetosdehiago.vaportrilhos.module.ModuleType;
 import io.github.projetosdehiago.vaportrilhos.network.LandshipActionPayload;
 import io.github.projetosdehiago.vaportrilhos.registry.ModDataComponents;
 import io.github.projetosdehiago.vaportrilhos.registry.ModItems;
@@ -40,6 +46,7 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.util.Mth;
+import net.minecraft.util.Prediction;
 import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.Containers;
 import net.minecraft.world.InteractionHand;
@@ -71,6 +78,7 @@ import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import java.util.List;
 import java.util.function.Predicate;
 import org.jspecify.annotations.Nullable;
 
@@ -89,6 +97,8 @@ public class LandshipEntity extends VehicleEntity implements HasCustomInventoryS
 	private static final EntityDataAccessor<Float> DATA_BURN = SynchedEntityData.defineId(LandshipEntity.class, EntityDataSerializers.FLOAT);
 	private static final EntityDataAccessor<Byte> DATA_FLAGS = SynchedEntityData.defineId(LandshipEntity.class, EntityDataSerializers.BYTE);
 	private static final EntityDataAccessor<Integer> DATA_DAMPER = SynchedEntityData.defineId(LandshipEntity.class, EntityDataSerializers.INT);
+	/** Módulos por encaixe + compactador ligado ({@link LandshipModules#encode()}). */
+	private static final EntityDataAccessor<Integer> DATA_MODULES = SynchedEntityData.defineId(LandshipEntity.class, EntityDataSerializers.INT);
 
 	private static final int FLAG_FIRE = 1;
 	private static final int FLAG_DRY = 2;
@@ -98,6 +108,10 @@ public class LandshipEntity extends VehicleEntity implements HasCustomInventoryS
 	/** Meia distância entre as esteiras, em blocos (centro da esteira a 19,5 px do eixo). */
 	public static final float TRACK_HALF_SPAN = 19.5f / 16f;
 	private static final float SEAT_HEIGHT = 1.15f;
+	/** Altura do teto sólido (a caixa de colisão). */
+	public static final float ROOF_HEIGHT = 2.0f;
+	/** Altura do colchão da cama móvel (px do modelo). */
+	private static final float BED_TOP_PX = 23f;
 	/** Folga vertical para considerar uma entidade "em pé em cima" do landship. */
 	private static final double PLATFORM_TOLERANCE = 0.1;
 
@@ -109,6 +123,7 @@ public class LandshipEntity extends VehicleEntity implements HasCustomInventoryS
 	private static final RawAnimation ENGINE_IDLE = RawAnimation.begin().thenLoop("animation.landship.engine.idle");
 	private static final RawAnimation ENGINE_WORKING = RawAnimation.begin().thenLoop("animation.landship.engine.working");
 	private static final RawAnimation VENT = RawAnimation.begin().thenPlay("animation.landship.boiler.vent");
+	private static final RawAnimation COMPACTOR_ROLL = RawAnimation.begin().thenLoop("animation.landship.compactor.roll");
 	/** Velocidade da esteira (blocos/tick) que corresponde à animação em 1×. */
 	private static final float TRACK_ANIM_UNIT = 1f / TICKS_PER_SECOND;
 
@@ -119,6 +134,8 @@ public class LandshipEntity extends VehicleEntity implements HasCustomInventoryS
 	private final BoilerSimulation.Load load = new BoilerSimulation.Load();
 	private final BoilerSimulation.Result result = new BoilerSimulation.Result();
 	private final SimpleContainer fuel = new SimpleContainer(FUEL_SLOTS);
+	private final LandshipModules modules = new LandshipModules();
+	private float lastYawChange;
 	private float integrity = MAX_INTEGRITY;
 	private double lastServerX;
 	private double lastServerY;
@@ -129,6 +146,7 @@ public class LandshipEntity extends VehicleEntity implements HasCustomInventoryS
 	private int repairCooldown;
 	private int whistleCooldown;
 	private int chugTimer;
+	private int bedIndexTimer;
 
 	// --- lado com autoridade de movimento
 	private float speed;
@@ -173,6 +191,7 @@ public class LandshipEntity extends VehicleEntity implements HasCustomInventoryS
 		builder.define(DATA_BURN, 0f);
 		builder.define(DATA_FLAGS, (byte) 0);
 		builder.define(DATA_DAMPER, Damper.NORMAL.ordinal());
+		builder.define(DATA_MODULES, 0);
 	}
 
 	public float getWaterMb() {
@@ -211,6 +230,45 @@ public class LandshipEntity extends VehicleEntity implements HasCustomInventoryS
 		return fuel;
 	}
 
+	/** Estado completo dos módulos (servidor). */
+	public LandshipModules modules() {
+		return modules;
+	}
+
+	/** Módulos por encaixe, lidos do dado sincronizado (vale nos dois lados). */
+	public ModuleType[] getInstalledModules() {
+		return LandshipModules.decode(entityData.get(DATA_MODULES));
+	}
+
+	public @Nullable ModuleType getModuleAt(ModuleSlot slot) {
+		return getInstalledModules()[slot.ordinal()];
+	}
+
+	public boolean hasModule(ModuleType type) {
+		for (ModuleType t : getInstalledModules()) {
+			if (t == type) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	public int getModuleBits() {
+		return entityData.get(DATA_MODULES);
+	}
+
+	public boolean isCompactorOn() {
+		return LandshipModules.decodeCompactorOn(entityData.get(DATA_MODULES));
+	}
+
+	private int moduleCount() {
+		return LandshipModules.countIn(entityData.get(DATA_MODULES));
+	}
+
+	private void syncModules() {
+		entityData.set(DATA_MODULES, modules.encode());
+	}
+
 	private void syncBoiler() {
 		// valores arredondados: evitam reenviar o estado a cada tick por mudanças invisíveis
 		entityData.set(DATA_WATER, (float) Math.round(boiler.waterMb));
@@ -227,6 +285,7 @@ public class LandshipEntity extends VehicleEntity implements HasCustomInventoryS
 			flags |= FLAG_DRY;
 		}
 		entityData.set(DATA_FLAGS, flags);
+		syncModules();
 	}
 
 	// =====================================================================================
@@ -420,7 +479,8 @@ public class LandshipEntity extends VehicleEntity implements HasCustomInventoryS
 		float terrain = terrainFactor();
 		float condition = getIntegrity() < MAX_INTEGRITY * CRITICAL_INTEGRITY_FRACTION ? CRITICAL_SPEED_FACTOR : 1f;
 		float water = isInWater() ? 0.5f : 1f;
-		float factor = power * terrain * condition * water;
+		float mass = Math.max(0f, 1f - MODULE_SPEED_PENALTY * moduleCount());
+		float factor = power * terrain * condition * water * mass;
 		float maxForward = MAX_SPEED_M_S / TICKS_PER_SECOND * factor;
 		float maxReverse = MAX_REVERSE_M_S / TICKS_PER_SECOND * factor;
 		float grip = isOnSlipperyGround() ? 0.3f : 1f;
@@ -522,6 +582,9 @@ public class LandshipEntity extends VehicleEntity implements HasCustomInventoryS
 			horizontal = 0; // teleporte, não movimento
 		}
 		float speedMs = (float) horizontal * TICKS_PER_SECOND;
+		Vec3 forward = forwardVector();
+		float forwardSpeedMs = hasLastServerPos && horizontal > 0 ? (float) (dx * forward.x + dz * forward.z) * TICKS_PER_SECOND : 0f;
+		lastYawChange = yawChange;
 		load.reset();
 		load.speedFraction = Math.min(1f, speedMs / MAX_SPEED_M_S);
 		load.pivoting = yawChange > 0.05f && speedMs < 0.3f;
@@ -541,6 +604,23 @@ public class LandshipEntity extends VehicleEntity implements HasCustomInventoryS
 		if (boiler.fireLit && level.getFluidState(BlockPos.containing(getX(), getY() + 1.5, getZ())).is(FluidTags.WATER)) {
 			BoilerSimulation.extinguish(boiler);
 			playSound(level, net.minecraft.sounds.SoundEvents.FIRE_EXTINGUISH, 1f, 1f);
+		}
+
+		// módulos que puxam da caldeira
+		if (FurnaceModule.tick(level, modules, boiler)) {
+			load.steamPenaltyBarPerSecond += FURNACE_STEAM_PENALTY_BAR_PER_S;
+			load.extraBurnTicks += FURNACE_EXTRA_BURN_PER_TICK;
+		}
+		if (modules.compactorOn && modules.has(ModuleType.COMPACTOR) && forwardSpeedMs >= COMPACTOR_MIN_SPEED_M_S
+				&& getControllingPassenger() instanceof Player pilot) {
+			load.extraBarPerSecond += COMPACTOR_BAR_PER_S;
+			if (tickCount % COMPACTOR_INTERVAL_TICKS == 0) {
+				wear += Compactor.run(level, this, modules, pilot) * WEAR_PER_COMPACTED_BLOCK;
+			}
+		}
+		if (modules.has(ModuleType.BED) && --bedIndexTimer <= 0) {
+			bedIndexTimer = (int) TICKS_PER_SECOND;
+			LandshipBed.updateIndex(level.getServer(), this);
 		}
 
 		BoilerSimulation.tick(boiler, load, () -> takeFuel(level), result);
@@ -638,9 +718,20 @@ public class LandshipEntity extends VehicleEntity implements HasCustomInventoryS
 			spawnAtLocation(level, new ItemStack(Items.IRON_NUGGET, 6));
 			spawnAtLocation(level, new ItemStack(Items.OAK_PLANKS, 4));
 			Containers.dropContents(level, this, fuel);
+			for (ItemStack stack : modules.removeAll()) {
+				spawnAtLocation(level, stack);
+			}
 		}
 		ejectPassengers();
 		kill(level);
+	}
+
+	@Override
+	public void remove(RemovalReason reason) {
+		if (reason.shouldDestroy() && level() instanceof ServerLevel serverLevel) {
+			LandshipBed.removeFromIndex(serverLevel.getServer(), getUUID());
+		}
+		super.remove(reason);
 	}
 
 	@Override
@@ -690,7 +781,14 @@ public class LandshipEntity extends VehicleEntity implements HasCustomInventoryS
 
 		if (player.isSecondaryUseActive()) {
 			if (stack.is(ModItems.BOILERMAKER_WRENCH)) {
-				return level().isClientSide() ? InteractionResult.SUCCESS : tryPickUp(player);
+				if (level().isClientSide()) {
+					return InteractionResult.SUCCESS;
+				}
+				return modules.isEmpty() ? tryPickUp(player) : tryRemoveModule(player);
+			}
+			ModuleType moduleType = ModuleType.of(stack);
+			if (moduleType != null) {
+				return level().isClientSide() ? InteractionResult.SUCCESS : tryInstallModule(player, stack, moduleType);
 			}
 			if (!level().isClientSide()) {
 				player.openMenu(this);
@@ -820,6 +918,51 @@ public class LandshipEntity extends VehicleEntity implements HasCustomInventoryS
 		return InteractionResult.SUCCESS_SERVER;
 	}
 
+	private InteractionResult tryInstallModule(Player player, ItemStack stack, ModuleType type) {
+		if (!isStationary()) {
+			player.sendOverlayMessage(Component.translatable("message.vapor_trilhos.module_moving"));
+			return InteractionResult.FAIL;
+		}
+		ModuleSlot slot = modules.freeSlotFor(type);
+		if (slot == null) {
+			player.sendOverlayMessage(Component.translatable("message.vapor_trilhos.module_no_room",
+					Component.translatable(type.item().getDescriptionId())));
+			return InteractionResult.FAIL;
+		}
+		modules.install(slot, type);
+		stack.consume(1, player);
+		syncModules();
+		playSound((ServerLevel) level(), ModSounds.REPAIR, 1f, 1.2f);
+		player.sendOverlayMessage(Component.translatable("message.vapor_trilhos.module_installed",
+				Component.translatable(type.item().getDescriptionId())));
+		return InteractionResult.SUCCESS_SERVER;
+	}
+
+	/** Chave de caldeireiro: tira o último módulo instalado e devolve o conteúdo dele. */
+	private InteractionResult tryRemoveModule(Player player) {
+		if (!isStationary()) {
+			player.sendOverlayMessage(Component.translatable("message.vapor_trilhos.module_moving"));
+			return InteractionResult.FAIL;
+		}
+		ModuleSlot slot = modules.lastInstalled();
+		ModuleType type = slot != null ? modules.get(slot) : null;
+		if (slot == null || type == null) {
+			return InteractionResult.FAIL;
+		}
+		if (type == ModuleType.BED) {
+			LandshipBed.removeFromIndex(((ServerLevel) level()).getServer(), getUUID());
+		}
+		List<ItemStack> returned = modules.remove(slot);
+		for (ItemStack item : returned) {
+			player.getInventory().placeItemBackInInventory(item, Prediction.SERVER_ONLY);
+		}
+		syncModules();
+		playSound((ServerLevel) level(), ModSounds.REPAIR, 1f, 0.7f);
+		player.sendOverlayMessage(Component.translatable("message.vapor_trilhos.module_removed",
+				Component.translatable(type.item().getDescriptionId())));
+		return InteractionResult.SUCCESS_SERVER;
+	}
+
 	private InteractionResult tryPickUp(Player player) {
 		if (isVehicle()) {
 			player.sendOverlayMessage(Component.translatable("message.vapor_trilhos.pickup_occupied"));
@@ -868,6 +1011,7 @@ public class LandshipEntity extends VehicleEntity implements HasCustomInventoryS
 		switch (action) {
 			case CYCLE_DAMPER -> cycleDamper(sender);
 			case MANUAL_VENT -> manualVent(level, sender);
+			case TOGGLE_COMPACTOR -> toggleCompactor(sender);
 			case WHISTLE -> {
 				if (whistleCooldown <= 0) {
 					playSound(level, ModSounds.WHISTLE, 3f, 1f);
@@ -892,6 +1036,17 @@ public class LandshipEntity extends VehicleEntity implements HasCustomInventoryS
 		} else {
 			player.sendOverlayMessage(Component.translatable("message.vapor_trilhos.vent_unavailable"));
 		}
+	}
+
+	public void toggleCompactor(Player player) {
+		if (!modules.has(ModuleType.COMPACTOR)) {
+			player.sendOverlayMessage(Component.translatable("message.vapor_trilhos.no_compactor"));
+			return;
+		}
+		modules.compactorOn = !modules.compactorOn;
+		syncModules();
+		player.sendOverlayMessage(Component.translatable(modules.compactorOn
+				? "message.vapor_trilhos.compactor_on" : "message.vapor_trilhos.compactor_off"));
 	}
 
 	/** Botão do painel: acende (se houver combustível) ou apaga a fornalha. */
@@ -928,8 +1083,10 @@ public class LandshipEntity extends VehicleEntity implements HasCustomInventoryS
 		return new LandshipMenu(containerId, inventory, this);
 	}
 
+	/** Painel e baús: a bordo ou a até 5 blocos do casco (design.md A6.2). */
 	public boolean isUsableBy(Player player) {
-		return !isRemoved() && player.distanceToSqr(this) <= 8 * 8;
+		return !isRemoved() && (player.getVehicle() == this
+				|| getBoundingBox().distanceToSqr(player.getEyePosition()) <= MODULE_REACH * MODULE_REACH);
 	}
 
 	// =====================================================================================
@@ -947,6 +1104,7 @@ public class LandshipEntity extends VehicleEntity implements HasCustomInventoryS
 		output.putFloat("BurnRemaining", boiler.burnRemaining);
 		output.putFloat("BurnTotal", boiler.burnTotal);
 		ContainerHelper.saveAllItems(output.child("Fuel"), fuel.getItems());
+		modules.save(output.child("Modules"));
 	}
 
 	@Override
@@ -960,6 +1118,7 @@ public class LandshipEntity extends VehicleEntity implements HasCustomInventoryS
 		boiler.burnRemaining = input.getFloatOr("BurnRemaining", 0f);
 		boiler.burnTotal = input.getFloatOr("BurnTotal", 0f);
 		ContainerHelper.loadAllItems(input.childOrEmpty("Fuel"), fuel.getItems());
+		modules.load(input.childOrEmpty("Modules"));
 		syncBoiler();
 	}
 
@@ -1056,6 +1215,51 @@ public class LandshipEntity extends VehicleEntity implements HasCustomInventoryS
 	}
 
 	// =====================================================================================
+	// Cama
+	// =====================================================================================
+
+	/** Parado (servidor: medido; cliente: esteiras paradas). Instalar módulos e dormir exigem isso. */
+	public boolean isStationary() {
+		if (level().isClientSide()) {
+			return Math.abs(trackLeftSpeed) + Math.abs(trackRightSpeed) < 0.002f;
+		}
+		return lastSpeedMs < 0.05f && lastYawChange < 0.05f;
+	}
+
+	private @Nullable ModuleSlot bedSlot() {
+		ModuleType[] installed = getInstalledModules();
+		for (ModuleSlot slot : ModuleSlot.DECK) {
+			if (installed[slot.ordinal()] == ModuleType.BED) {
+				return slot;
+			}
+		}
+		return null;
+	}
+
+	/** Onde fica a cabeça de quem dorme: no travesseiro, virado para a frente do landship. */
+	public Vec3 bedSleepPosition() {
+		ModuleSlot slot = bedSlot();
+		if (slot == null) {
+			return position().add(0, ROOF_HEIGHT, 0);
+		}
+		return modelPointToWorld(slot.leftPx, BED_TOP_PX, slot.backPx - 3.5f);
+	}
+
+	/** Bloco que o jogo trata como "a cama" (posição de sono). */
+	public BlockPos bedBlockPos() {
+		return BlockPos.containing(bedSleepPosition());
+	}
+
+	/** Gira para o múltiplo de 90° mais próximo (a pegada é quadrada: não muda o espaço ocupado). */
+	public void alignToGrid() {
+		float aligned = Math.round(getYRot() / 90f) * 90f;
+		setYRot(aligned);
+		yRotO = aligned;
+		lastServerYaw = aligned;
+		lastTickYaw = aligned;
+	}
+
+	// =====================================================================================
 	// GeckoLib
 	// =====================================================================================
 
@@ -1072,6 +1276,16 @@ public class LandshipEntity extends VehicleEntity implements HasCustomInventoryS
 			}
 			boolean moving = Math.abs(self.trackLeftSpeed) + Math.abs(self.trackRightSpeed) > 0.01f;
 			return test.setAndContinue(moving ? ENGINE_WORKING : ENGINE_IDLE);
+		}));
+		controllers.add(new AnimationController<LandshipEntity>("compactor", 0, test -> {
+			LandshipEntity self = test.animatable();
+			float speed = (self.trackLeftSpeed + self.trackRightSpeed) / 2f;
+			if (!self.isCompactorOn() || speed <= 0.002f) {
+				test.setControllerSpeed(0f);
+				return test.controller().getCurrentRawAnimation() != null ? PlayState.CONTINUE : PlayState.STOP;
+			}
+			test.setControllerSpeed(speed / TRACK_ANIM_UNIT);
+			return test.setAndContinue(COMPACTOR_ROLL);
 		}));
 		controllers.add(new AnimationController<LandshipEntity>("boiler", 0, test -> PlayState.STOP)
 				.triggerableAnim("vent", VENT));

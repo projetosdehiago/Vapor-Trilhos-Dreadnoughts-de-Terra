@@ -10,6 +10,9 @@ import com.geckolib.renderer.layer.builtin.AutoGlowingGeoLayer;
 import io.github.projetosdehiago.vaportrilhos.VaporTrilhos;
 import io.github.projetosdehiago.vaportrilhos.boiler.BalanceConstants;
 import io.github.projetosdehiago.vaportrilhos.landship.LandshipEntity;
+import io.github.projetosdehiago.vaportrilhos.module.LandshipModules;
+import io.github.projetosdehiago.vaportrilhos.module.ModuleSlot;
+import io.github.projetosdehiago.vaportrilhos.module.ModuleType;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.rendertype.RenderType;
@@ -27,9 +30,10 @@ public class LandshipRenderer extends GeoEntityRenderer<LandshipEntity, EntityRe
 	private static final DataTicket<Float> PITCH = DataTicket.create("vapor_trilhos_pitch", Float.class);
 	private static final DataTicket<Float> ROLL = DataTicket.create("vapor_trilhos_roll", Float.class);
 	private static final DataTicket<Boolean> FIRE = DataTicket.create("vapor_trilhos_fire", Boolean.class);
+	private static final DataTicket<Integer> MODULES = DataTicket.create("vapor_trilhos_modules", Integer.class);
 
-	private static final String[] SLOTS = {"slot_fl", "slot_fr", "slot_ml", "slot_mr", "slot_rl", "slot_rr"};
-	private static final String[] MODULE_KINDS = {"bed", "cargo", "furnace"};
+	/** Tipos com osso próprio em cada encaixe do deque ({@code slot_<encaixe>_<tipo>}). */
+	private static final ModuleType[] DECK_KINDS = {ModuleType.BED, ModuleType.CARGO, ModuleType.FURNACE};
 
 	public LandshipRenderer(EntityRendererProvider.Context context) {
 		super(context, new DefaultedEntityGeoModel<>(VaporTrilhos.id("landship")));
@@ -55,19 +59,24 @@ public class LandshipRenderer extends GeoEntityRenderer<LandshipEntity, EntityRe
 		state.addGeckolibData(PITCH, landship.getBodyPitch());
 		state.addGeckolibData(ROLL, landship.getBodyRoll());
 		state.addGeckolibData(FIRE, landship.isFireLit());
+		state.addGeckolibData(MODULES, landship.getModuleBits());
 	}
 
 	@Override
 	public void adjustModelBonesForRender(RenderPassInfo<EntityRenderState> renderPassInfo, BoneSnapshots snapshots) {
 		GeoRenderState state = geo(renderPassInfo.renderState());
 
-		// Fase 1: nenhum módulo instalado ainda
-		for (String slot : SLOTS) {
-			for (String kind : MODULE_KINDS) {
-				snapshots.get(slot + "_" + kind).ifPresent(bone -> bone.skipRender(true).skipChildrenRender(true));
+		// cada encaixe mostra só o módulo instalado nele
+		Integer bits = state.getGeckolibData(MODULES);
+		ModuleType[] installed = LandshipModules.decode(bits == null ? 0 : bits);
+		for (ModuleSlot slot : ModuleSlot.DECK) {
+			for (ModuleType kind : DECK_KINDS) {
+				boolean hidden = installed[slot.ordinal()] != kind;
+				snapshots.get("slot_" + slot.code + "_" + kind.id()).ifPresent(bone -> bone.skipRender(hidden).skipChildrenRender(hidden));
 			}
 		}
-		snapshots.get("slot_front_compactor").ifPresent(bone -> bone.skipRender(true).skipChildrenRender(true));
+		boolean noCompactor = installed[ModuleSlot.FRONT.ordinal()] != ModuleType.COMPACTOR;
+		snapshots.get("slot_front_compactor").ifPresent(bone -> bone.skipRender(noCompactor).skipChildrenRender(noCompactor));
 
 		float pressure = orZero(state.getGeckolibData(PRESSURE));
 		float needle = (0.75f - Math.min(pressure, BalanceConstants.MAX_BAR) / BalanceConstants.MAX_BAR * 1.5f) * Mth.PI;

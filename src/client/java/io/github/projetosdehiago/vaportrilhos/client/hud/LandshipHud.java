@@ -1,11 +1,13 @@
 package io.github.projetosdehiago.vaportrilhos.client.hud;
 
 import io.github.projetosdehiago.vaportrilhos.landship.LandshipEntity;
+import io.github.projetosdehiago.vaportrilhos.module.ModuleType;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElement;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.network.chat.Component;
 
 /** Medidores da caldeira ao lado da hotbar, enquanto o jogador está a bordo. */
 public class LandshipHud implements HudElement {
@@ -28,8 +30,16 @@ public class LandshipHud implements HudElement {
 			x = 2;
 			y = g.guiHeight() - PANEL_HEIGHT - 50;
 		}
-		g.fill(x - 4, y - 4, x + PANEL_WIDTH, y + PANEL_HEIGHT - 2, 0x90000000);
+		int height = landship.hasModule(ModuleType.COMPACTOR) ? PANEL_HEIGHT + 11 : PANEL_HEIGHT;
+		if (y + height > g.guiHeight()) {
+			y = g.guiHeight() - height - 2;
+		}
+		g.fill(x - 4, y - 4, x + PANEL_WIDTH, y + height - 2, 0x90000000);
 		Gauges.boilerRows(g, font, landship, x, y, LABEL_WIDTH, BAR_WIDTH, Gauges.TEXT);
 		g.text(font, Gauges.fireAndDamper(landship), x, y + 45, Gauges.TEXT, false);
+		if (landship.hasModule(ModuleType.COMPACTOR)) {
+			g.text(font, Component.translatable(landship.isCompactorOn() ? "hud.vapor_trilhos.compactor_on" : "hud.vapor_trilhos.compactor_off"),
+					x, y + 56, Gauges.TEXT, false);
+		}
 	}
 }
