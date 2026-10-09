@@ -4,6 +4,7 @@ import io.github.projetosdehiago.vaportrilhos.boiler.BalanceConstants;
 import io.github.projetosdehiago.vaportrilhos.boiler.BoilerState;
 import io.github.projetosdehiago.vaportrilhos.boiler.Damper;
 import io.github.projetosdehiago.vaportrilhos.landship.LandshipEntity;
+import io.github.projetosdehiago.vaportrilhos.landship.WhistleSound;
 import io.github.projetosdehiago.vaportrilhos.module.LandshipBed;
 import io.github.projetosdehiago.vaportrilhos.module.LandshipModules;
 import io.github.projetosdehiago.vaportrilhos.module.ModuleSlot;
@@ -19,7 +20,9 @@ import net.fabricmc.fabric.api.util.EventResult;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
@@ -28,6 +31,8 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.storage.LevelData;
+import net.minecraft.world.level.storage.TagValueInput;
+import net.minecraft.world.level.storage.TagValueOutput;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
@@ -298,5 +303,23 @@ public class ModuleGameTests {
 					helper.assertValueEqual(respawned.getRespawnConfig(), bedAtHome, "depois de renascer, o ponto normal volta");
 				})
 				.thenSucceed();
+	}
+
+	@GameTest
+	public void whistleChoiceIsKeptAndSaved(GameTestHelper helper) {
+		LandshipEntity landship = setUp(helper);
+		Player player = helper.makeMockPlayer(GameType.SURVIVAL);
+		helper.assertValueEqual(landship.getWhistle(), WhistleSound.STEAM, "o padrão é o apito a vapor");
+		landship.selectWhistle(player, WhistleSound.CUSTOM);
+		helper.assertValueEqual(landship.getWhistle(), WhistleSound.CUSTOM, "a escolha fica no landship");
+		helper.assertTrue(LandshipEntity.class.getResource("/assets/vapor_trilhos/sounds/whistle/gemidao.ogg") != null,
+				"o áudio personalizado vem dentro do mod");
+
+		TagValueOutput output = TagValueOutput.createWithContext(ProblemReporter.DISCARDING, helper.getLevel().registryAccess());
+		landship.saveWithoutId(output);
+		LandshipEntity reloaded = ModEntities.LANDSHIP.create(helper.getLevel(), EntitySpawnReason.LOAD);
+		reloaded.load(TagValueInput.create(ProblemReporter.DISCARDING, helper.getLevel().registryAccess(), output.buildResult()));
+		helper.assertValueEqual(reloaded.getWhistle(), WhistleSound.CUSTOM, "a escolha sobrevive a salvar e carregar o mundo");
+		helper.succeed();
 	}
 }
