@@ -107,5 +107,17 @@
   "assembly.vapor_trilhos.assembled": "Landship montado!",
   "assembly.vapor_trilhos.disassembled": "Landship desmontado em blocos",
   "assembly.vapor_trilhos.no_room": "Sem espaço para colocar os blocos aqui",
-  "assembly.vapor_trilhos.needs_repair": "Conserte o casco até 100% antes de desmontar"
+  "assembly.vapor_trilhos.needs_repair": "Conserte o casco até 100% antes de desmontar",
+  "tab.vapor_trilhos.whistle": "Apito",
+  "whistle.vapor_trilhos.steam": "Apito a vapor",
+  "whistle.vapor_trilhos.foghorn": "Buzina de nevoeiro",
+  "whistle.vapor_trilhos.bell": "Sino de navio",
+  "whistle.vapor_trilhos.war_horn": "Corneta de guerra",
+  "whistle.vapor_trilhos.custom": "Personalizado",
+  "whistle.vapor_trilhos.custom_name": "gemidão",
+  "message.vapor_trilhos.whistle_selected": "Apito: %s",
+  "subtitles.vapor_trilhos.whistle.foghorn": "Buzina do landship",
+  "subtitles.vapor_trilhos.whistle.bell": "Sino do landship toca",
+  "subtitles.vapor_trilhos.whistle.war_horn": "Corneta do landship",
+  "subtitles.vapor_trilhos.whistle.custom": "Apito personalizado do landship"
 }
