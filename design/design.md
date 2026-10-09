@@ -62,7 +62,7 @@ eventos (válvula de segurança, alívio manual, choque térmico) aparecem para 
 | Painel do landship | E (inventário) enquanto embarcado | Abre caldeira + módulos |
 | Abafador | R | Cicla Fechado → Normal → Aberto |
 | Válvula de alívio | V | Solta vapor manualmente (−2 bar) |
-| Apito | H | Som apenas (diversão / sinalização multiplayer) |
+| Apito | H | Som apenas (diversão / sinalização multiplayer). O som é escolhido na aba **Apito** do painel: Apito a vapor (padrão), Buzina de nevoeiro, Sino de navio, Corneta de guerra ou **Personalizado: gemidão** (áudio próprio do mod). Cada landship guarda o seu; todos por perto ouvem |
 | Compactador | C | Liga/desliga o compactador frontal |
 
 Interação de fora do veículo:
@@ -636,6 +636,15 @@ Decisões e detalhes:
 
 Testes: 14 JUnit, 25 GameTests de servidor (8 dos módulos) e 2 GameTests de cliente (o segundo
 instala todos os módulos, fotografa as abas, dorme até de manhã e renasce ao lado do landship).
+
+### Apito com escolha de som
+
+`landship/WhistleSound` lista as 5 opções; a escolhida fica num dado sincronizado da entidade e é
+salva com ela. Os 4 primeiros sons são áudios do jogo base (`sounds.json`); o personalizado é o
+único áudio do mod: `assets/vapor_trilhos/sounds/whistle/gemidao.ogg`, convertido do MP3 enviado
+pelo usuário para OGG Vorbis **mono** (`ffmpeg -i entrada.mp3 -ac 1 -ar 44100 -c:a libvorbis -q:a 4
+gemidao.ogg`), porque o jogo só diminui com a distância os sons mono. A recarga de cada opção
+acompanha a duração do som (o personalizado tem 7 s).
 
 ### Fase 3 — montagem (implementada)
 

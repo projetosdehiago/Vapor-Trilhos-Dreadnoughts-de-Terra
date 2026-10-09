@@ -29,7 +29,7 @@ personalizável com módulos (cama, baús de carga, fornalha de alta temperatura
 | E (embarcado) ou Shift + clique direito | Painel da caldeira |
 | R | Abafador: Fechado → Normal → Aberto |
 | V | Válvula de alívio (−2 bar; cega quem está perto, fora do veículo) |
-| H | Apito |
+| H | Apito (o som se escolhe na aba **Apito** do painel: a vapor, buzina, sino, corneta ou personalizado) |
 | C | Liga/desliga o compactador |
 
 - **Cuidado com a pressão:** acima de 10 bar a válvula de segurança solta vapor que cega todos
