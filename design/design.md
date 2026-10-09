@@ -64,6 +64,7 @@ eventos (válvula de segurança, alívio manual, choque térmico) aparecem para 
 | Válvula de alívio | V | Solta vapor manualmente (−2 bar) |
 | Apito | H | Som apenas (diversão / sinalização multiplayer). O som é escolhido na aba **Apito** do painel: Apito a vapor (padrão), Buzina de nevoeiro, Sino de navio, Corneta de guerra ou **Personalizado: gemidão** (áudio próprio do mod). Cada landship guarda o seu; todos por perto ouvem |
 | Compactador | C | Liga/desliga o compactador frontal |
+| Desmontar | J (2 toques) | De fora, olhando para o landship: o 1º toque pede confirmação, o 2º (em até 3 s) desmonta em blocos (A8) |
 
 Interação de fora do veículo:
 
@@ -324,7 +325,8 @@ estiver válido, os blocos somem e o landship aparece no lugar, com os módulos 
 (e o conteúdo dos baús transferido). Se não estiver, uma mensagem diz o que falta e fumaça
 marca os blocos errados.
 
-**Desmontar** (botão "Desmontar em blocos" na aba Módulos do painel) faz o inverso: o landship
+**Desmontar** (botão "Desmontar em blocos" na aba Módulos do painel, ou a tecla Desmontar
+apertada duas vezes olhando para o landship) faz o inverso: o landship
 vira os blocos do gabarito no lugar onde está, virado para a frente dele. Exige o veículo
 parado, sem ninguém a bordo, com a caldeira fria (fogo apagado, ≤ 60 °C) e o **casco 100 %
 reparado** (senão desmontar e montar de novo seria um conserto de graça). Verifica o espaço de
@@ -663,18 +665,24 @@ som (o personalizado tem 7 s).
 | Blocos e receitas (A7) | `registry/ModBlocks`, `ModBlockEntities`, `assembly/LandshipHelmBlock`, `assembly/CargoModuleBlock` |
 | Gabarito, montar, desmontar (A8) | `assembly/LandshipAssembly` (`Layout`, `scan`, `assemble`, `disassemble`) |
 | Botão Desmontar | `LandshipMenu.BUTTON_DISASSEMBLE` / aba Módulos da `LandshipScreen` |
+| Tecla Desmontar (J) | `VaporTrilhosClient.DISASSEMBLE` → `network/LandshipDisassemblePayload` |
 
 Decisões e detalhes:
 
-- **Desmontar pelo painel** e não pela chave: Shift + chave já recolhe o landship como item, e
-  as duas coisas continuam existindo.
+- **Desmontar pelo painel ou pela tecla J**, e não pela chave: Shift + chave já recolhe o
+  landship como item, e as duas coisas continuam existindo.
+- **Tecla J com confirmação:** o primeiro toque só avisa ("aperte J de novo"); o segundo, em
+  até 3 s e no mesmo landship, manda um payload com o id da entidade. Quem desmonta está do
+  lado de fora (o veículo precisa estar vazio), então o alvo vem da mira, não do veículo. O
+  servidor confere o alcance do painel (`isUsableBy`) e as mesmas regras do botão.
 - **Leme:** o modelo usa a base `orientable` girada 180°: o volante fica virado para quem está
   atrás do leme (o piloto) e a seta no topo aponta para a frente do landship.
 - **Texturas dos blocos:** geradas por `design/textures/gen_block_textures.py`.
 
 Testes: 14 JUnit, 34 GameTests de servidor (9 da montagem: as 4 direções, módulos e baús,
 gabarito incompleto, baús demais, ida e volta, desmontagem recusada) e 3 GameTests de cliente
-(o terceiro monta com um clique real da chave no leme e desmonta pelo painel).
+(o terceiro monta com um clique real da chave no leme, desmonta pelo painel, monta de novo e
+desmonta pela tecla J, conferindo que um toque só não desmonta).
 
 ## B4. Plano de entregas
 
