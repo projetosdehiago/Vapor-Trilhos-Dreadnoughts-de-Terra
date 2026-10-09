@@ -1,0 +1,51 @@
+name: Release
+
+# Publica uma release no GitHub com o .jar. Disparo manual (Actions → Release → Run workflow),
+# a partir da main, com a mesma versão que está em gradle.properties.
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Versão (igual ao mod_version do gradle.properties, ex.: 1.0.0)'
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Versão confere com o gradle.properties
+        env:
+          VERSION: ${{ inputs.version }}
+        run: |
+          declared=$(grep '^mod_version=' gradle.properties | cut -d= -f2)
+          if [ "$declared" != "$VERSION" ]; then
+            echo "::error::gradle.properties diz $declared, mas pediu-se $VERSION"
+            exit 1
+          fi
+          test -f "docs/release-notes/$VERSION.md" || { echo "::error::falta docs/release-notes/$VERSION.md"; exit 1; }
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 25
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Build (com testes JUnit e GameTests de servidor)
+        run: ./gradlew build --stacktrace
+
+      - name: Publicar a release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ inputs.version }}
+        run: |
+          gh release create "v$VERSION" "build/libs/vapor-trilhos-$VERSION.jar" \
+            --target "$GITHUB_SHA" \
+            --title "Vapor & Trilhos $VERSION" \
+            --notes-file "docs/release-notes/$VERSION.md"
