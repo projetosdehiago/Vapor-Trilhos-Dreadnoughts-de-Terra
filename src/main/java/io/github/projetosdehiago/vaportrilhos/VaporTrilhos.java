@@ -1,6 +1,8 @@
 package io.github.projetosdehiago.vaportrilhos;
 
+import io.github.projetosdehiago.vaportrilhos.module.LandshipBed;
 import io.github.projetosdehiago.vaportrilhos.network.ModNetworking;
+import io.github.projetosdehiago.vaportrilhos.registry.ModAttachments;
 import io.github.projetosdehiago.vaportrilhos.registry.ModCreativeTab;
 import io.github.projetosdehiago.vaportrilhos.registry.ModDataComponents;
 import io.github.projetosdehiago.vaportrilhos.registry.ModEntities;
@@ -25,6 +27,8 @@ public final class VaporTrilhos implements ModInitializer {
 		ModMenus.init();
 		ModCreativeTab.init();
 		ModNetworking.init();
+		ModAttachments.init();
+		LandshipBed.register();
 		LOGGER.info("Vapor & Trilhos: caldeiras acendendo");
 	}
 
