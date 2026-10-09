@@ -1,0 +1,19 @@
+{
+  "format_version": "1.21.90",
+  "minecraft:item": {
+    "description": {
+      "identifier": "vapor_trilhos:landship",
+      "menu_category": {
+        "category": "equipment"
+      }
+    },
+    "components": {
+      "minecraft:icon": "vapor_trilhos_landship",
+      "minecraft:display_name": {
+        "value": "item.vapor_trilhos.landship"
+      },
+      "minecraft:max_stack_size": 1,
+      "vapor_trilhos:landship_placer": {}
+    }
+  }
+}

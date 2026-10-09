@@ -1,0 +1,22 @@
+{
+  "name": "vapor-trilhos-bedrock",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Vapor & Trilhos: Dreadnoughts de Terra — versão Bedrock (add-on)",
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "check": "node scripts/check.mjs"
+  },
+  "dependencies": {
+    "@minecraft/server": "2.10.0",
+    "@minecraft/server-ui": "2.2.0"
+  },
+  "devDependencies": {
+    "esbuild": "0.28.2",
+    "typescript": "7.0.2",
+    "vitest": "5.0.3"
+  }
+}

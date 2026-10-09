@@ -1,0 +1,65 @@
+{
+  "format_version": 2,
+  "header": {
+    "name": "pack.name",
+    "description": "pack.description",
+    "uuid": "023b648c-b1a0-4c2a-b139-0aeb3de67d8e",
+    "version": [
+      1,
+      0,
+      0
+    ],
+    "min_engine_version": [
+      1,
+      26,
+      50
+    ]
+  },
+  "modules": [
+    {
+      "type": "data",
+      "uuid": "43ae592c-129e-47fe-8e15-e72456377ef4",
+      "version": [
+        1,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "script",
+      "language": "javascript",
+      "entry": "scripts/main.js",
+      "uuid": "85b32099-a95f-4c23-957d-14963ff5255a",
+      "version": [
+        1,
+        0,
+        0
+      ]
+    }
+  ],
+  "dependencies": [
+    {
+      "module_name": "@minecraft/server",
+      "version": "2.10.0"
+    },
+    {
+      "module_name": "@minecraft/server-ui",
+      "version": "2.2.0"
+    },
+    {
+      "uuid": "86db8438-c33e-46cb-aa9b-a27fb4d87d27",
+      "version": [
+        1,
+        0,
+        0
+      ]
+    }
+  ],
+  "metadata": {
+    "authors": [
+      "projetosdehiago"
+    ],
+    "license": "MIT",
+    "url": "https://github.com/projetosdehiago/Vapor-Trilhos-Dreadnoughts-de-Terra"
+  }
+}

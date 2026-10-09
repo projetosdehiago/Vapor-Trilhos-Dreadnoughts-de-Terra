@@ -1,0 +1,67 @@
+## Vapor & Trilhos: Dreadnoughts de Terra (Bedrock) - textos em português
+pack.name=Vapor & Trilhos (recursos)
+pack.description=Landships a vapor sobre esteiras: modelo, texturas e sons.
+
+entity.vapor_trilhos:landship.name=Landship
+action.interact.vapor_trilhos.board=Embarcar
+
+item.vapor_trilhos.landship=Landship (Cabine Básica)
+item.vapor_trilhos.reinforced_track=Esteira Reforçada
+item.vapor_trilhos.steam_boiler=Caldeira a Vapor
+item.vapor_trilhos.repair_kit=Kit de Reparo
+item.vapor_trilhos.boilermaker_wrench=Chave de Caldeireiro
+item.vapor_trilhos.command_panel=Painel de Comando
+
+vapor_trilhos.damper.closed=Fechado
+vapor_trilhos.damper.normal=Normal
+vapor_trilhos.damper.open=Aberto
+
+vapor_trilhos.whistle.steam=Apito a vapor
+vapor_trilhos.whistle.foghorn=Buzina de nevoeiro
+vapor_trilhos.whistle.bell=Sino de navio
+vapor_trilhos.whistle.war_horn=Corneta de guerra
+vapor_trilhos.whistle.custom=Personalizado: gemidão
+
+vapor_trilhos.hud=§7Pressão §r%s bar %s §7| §r%s °C §7| Água §b%s §7| %s §7| Casco %s
+vapor_trilhos.hud.fire_on=§6Fogo %s %s
+vapor_trilhos.hud.fire_off=§8Fogo apagado
+
+vapor_trilhos.panel.title=Painel do Landship
+vapor_trilhos.panel.pressure=Pressão: %s bar (%s)
+vapor_trilhos.panel.status_low=fraca, não anda
+vapor_trilhos.panel.status_ok=boa
+vapor_trilhos.panel.status_red=§czona vermelha§r
+vapor_trilhos.panel.status_danger=§cválvula de segurança vai abrir!§r
+vapor_trilhos.panel.temperature=Temperatura: %s °C
+vapor_trilhos.panel.water=Água: %s de %s baldes
+vapor_trilhos.panel.fire_on=Fogo: aceso, abafador %s, item atual %s
+vapor_trilhos.panel.fire_off=Fogo: apagado
+vapor_trilhos.panel.integrity=Casco: %s
+vapor_trilhos.panel.whistle_sound=Som do apito
+vapor_trilhos.panel.fuel_hint=Combustível: a bordo, abra o inventário para ver o compartimento. De fora, clique no landship com carvão, madeira ou outro combustível.
+
+vapor_trilhos.button.ignite=Acender o fogo
+vapor_trilhos.button.extinguish=Apagar o fogo
+vapor_trilhos.button.damper=Abafador: %s
+vapor_trilhos.button.vent=Válvula de alívio (−2 bar)
+vapor_trilhos.button.whistle=Apitar
+
+vapor_trilhos.message.already_lit=O fogo já está aceso
+vapor_trilhos.message.no_fuel=Sem combustível no compartimento
+vapor_trilhos.message.damper=Abafador: %s
+vapor_trilhos.message.vent_not_ready=A válvula de alívio ainda está recarregando
+vapor_trilhos.message.whistle_selected=Apito: %s
+vapor_trilhos.message.too_hot_to_repair=Quente demais para consertar: ponha água na caldeira primeiro
+vapor_trilhos.message.needs_metal=A madeira só remenda até %s: use ferro ou cobre
+vapor_trilhos.message.fully_repaired=O casco já está inteiro
+vapor_trilhos.message.integrity=Casco: %s
+vapor_trilhos.message.water_full=O tanque está cheio
+vapor_trilhos.message.fuel_full=O compartimento de combustível está cheio
+vapor_trilhos.message.no_room=Sem espaço: o landship precisa de 3 × 3 blocos livres e 2 de altura
+vapor_trilhos.message.pickup_occupied=Todos precisam sair do landship antes
+vapor_trilhos.message.pickup_hot=Apague o fogo e espere a caldeira esfriar (até 60 °C)
+vapor_trilhos.message.too_far=Longe demais do landship
+vapor_trilhos.message.look_at_landship=Embarque ou olhe para um landship para abrir o painel
+
+vapor_trilhos.lore.integrity=§7Casco: %s
+vapor_trilhos.lore.water=§7Água: %s baldes

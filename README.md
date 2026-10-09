@@ -87,6 +87,34 @@ Receitas novas: **Chassi de Landship** (`PIP` / `IPI` / `PIP`, dá 4) e **Leme d
 (`SXS` / `PIP`, X = bússola). A Esteira, a Caldeira e os módulos também podem ser colocados
 como blocos; o Baú de Carga como bloco funciona como um baú comum.
 
+## Versão Bedrock (em desenvolvimento)
+
+A pasta [`bedrock/`](bedrock/) tem o add-on para o Minecraft Bedrock 26.50 (PC e celular), com
+as mesmas regras da Parte A do [`design/design.md`](design/design.md). Está na **Fase B1**: o
+landship anda, a caldeira funciona, solta vapor, se desgasta e é consertado. Módulos e montagem
+vêm nas Fases B2 e B3.
+
+**Instalar:** abra o `vapor-trilhos-bedrock-<versão>.mcaddon` (artefato do GitHub Actions ou
+`bedrock/dist/` depois de compilar). O jogo importa os dois pacotes; ative-os no mundo.
+Não precisa ligar nenhum recurso experimental.
+
+| No Java | No Bedrock |
+|---|---|
+| W/A/S/D | Igual (no celular, o analógico) |
+| E (painel) | **Painel de Comando** na mão (vidro, cobre e redstone) ou agachar + clicar no landship. A bordo, o inventário abre o compartimento de combustível |
+| R, V, H | Botões do painel; **pular enquanto pilota** toca o apito |
+| Medidores na tela | Linha acima da barra de itens, para quem está a bordo |
+
+Compilar (precisa do Node.js 22):
+
+```bash
+cd bedrock
+npm ci
+npm test          # caldeira e direção
+npm run build     # gera bedrock/dist/vapor-trilhos-bedrock-<versão>.mcaddon
+npm run check     # confere as referências entre os arquivos do add-on
+```
+
 ## Requisitos
 
 | Componente | Versão |
@@ -146,8 +174,8 @@ Os sons dos apitos também: `python3 design/audio/gen_whistles.py` (precisa de n
 - Branches por funcionalidade, commits no padrão [Conventional Commits](https://www.conventionalcommits.org/),
   um PR por fase, com descrição e passos de teste.
 - O GitHub Actions compila o mod, roda os testes JUnit e os GameTests de servidor a cada push e
-  PR, roda o GameTest de cliente numa tela virtual (prints ficam como artefato) e confere se o
-  modelo gerado está em dia.
+  PR, roda o GameTest de cliente numa tela virtual (prints ficam como artefato), confere se o
+  modelo gerado está em dia e monta e confere o add-on Bedrock (o `.mcaddon` fica como artefato).
 
 ### Testes
 

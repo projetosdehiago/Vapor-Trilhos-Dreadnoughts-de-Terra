@@ -1,0 +1,134 @@
+{
+  "format_version": "1.10.0",
+  "animation_controllers": {
+    "controller.animation.vapor_trilhos.landship.track_left": {
+      "initial_state": "stopped",
+      "states": {
+        "stopped": {
+          "transitions": [
+            {
+              "forward": "q.property('vapor_trilhos:track_left') == 1"
+            },
+            {
+              "reverse": "q.property('vapor_trilhos:track_left') == -1"
+            }
+          ]
+        },
+        "forward": {
+          "animations": [
+            "track_left_forward"
+          ],
+          "transitions": [
+            {
+              "stopped": "q.property('vapor_trilhos:track_left') == 0"
+            },
+            {
+              "reverse": "q.property('vapor_trilhos:track_left') == -1"
+            }
+          ]
+        },
+        "reverse": {
+          "animations": [
+            "track_left_reverse"
+          ],
+          "transitions": [
+            {
+              "stopped": "q.property('vapor_trilhos:track_left') == 0"
+            },
+            {
+              "forward": "q.property('vapor_trilhos:track_left') == 1"
+            }
+          ]
+        }
+      }
+    },
+    "controller.animation.vapor_trilhos.landship.track_right": {
+      "initial_state": "stopped",
+      "states": {
+        "stopped": {
+          "transitions": [
+            {
+              "forward": "q.property('vapor_trilhos:track_right') == 1"
+            },
+            {
+              "reverse": "q.property('vapor_trilhos:track_right') == -1"
+            }
+          ]
+        },
+        "forward": {
+          "animations": [
+            "track_right_forward"
+          ],
+          "transitions": [
+            {
+              "stopped": "q.property('vapor_trilhos:track_right') == 0"
+            },
+            {
+              "reverse": "q.property('vapor_trilhos:track_right') == -1"
+            }
+          ]
+        },
+        "reverse": {
+          "animations": [
+            "track_right_reverse"
+          ],
+          "transitions": [
+            {
+              "stopped": "q.property('vapor_trilhos:track_right') == 0"
+            },
+            {
+              "forward": "q.property('vapor_trilhos:track_right') == 1"
+            }
+          ]
+        }
+      }
+    },
+    "controller.animation.vapor_trilhos.landship.engine": {
+      "initial_state": "idle",
+      "states": {
+        "idle": {
+          "animations": [
+            "engine_idle"
+          ],
+          "transitions": [
+            {
+              "working": "q.property('vapor_trilhos:working')"
+            }
+          ]
+        },
+        "working": {
+          "animations": [
+            "engine_working"
+          ],
+          "transitions": [
+            {
+              "idle": "!q.property('vapor_trilhos:working')"
+            }
+          ]
+        }
+      }
+    },
+    "controller.animation.vapor_trilhos.landship.vent": {
+      "initial_state": "closed",
+      "states": {
+        "closed": {
+          "transitions": [
+            {
+              "venting": "q.property('vapor_trilhos:venting')"
+            }
+          ]
+        },
+        "venting": {
+          "animations": [
+            "vent"
+          ],
+          "transitions": [
+            {
+              "closed": "!q.property('vapor_trilhos:venting') && q.all_animations_finished"
+            }
+          ]
+        }
+      }
+    }
+  }
+}

@@ -30,3 +30,7 @@ Thumbs.db
 # Python (gerador do modelo)
 __pycache__/
 *.pyc
+
+# Bedrock (add-on)
+bedrock/node_modules/
+bedrock/dist/
