@@ -1,6 +1,6 @@
 # Vapor & Trilhos: Dreadnoughts de Terra — Documento de Design
 
-> **Status:** v0.3 — arquitetura aprovada; Fases 1 (núcleo) e 2 (módulos) implementadas (ver B5).
+> **Status:** v0.4 — arquitetura aprovada; Fases 1 (núcleo), 2 (módulos) e 3 (montagem) implementadas (ver B5).
 > Este documento é a fonte para a versão Java (Fabric) **e** para uma futura versão Bedrock.
 > Por isso ele é dividido em duas partes:
 >
@@ -321,8 +321,16 @@ Nota: na Fase 3, `reinforced_track`, `steam_boiler`, os módulos, o chassi e o l
 
 O jogador constrói o gabarito abaixo e usa a **Chave de Caldeireiro** no Leme. Se o gabarito
 estiver válido, os blocos somem e o landship aparece no lugar, com os módulos correspondentes
-(e o conteúdo dos baús transferido). Agachar + chave num landship **parado e frio** faz o
-inverso (desmonta em blocos, se houver espaço livre; senão, recusa).
+(e o conteúdo dos baús transferido). Se não estiver, uma mensagem diz o que falta e fumaça
+marca os blocos errados.
+
+**Desmontar** (botão "Desmontar em blocos" na aba Módulos do painel) faz o inverso: o landship
+vira os blocos do gabarito no lugar onde está, virado para a frente dele. Exige o veículo
+parado, sem ninguém a bordo, com a caldeira fria (fogo apagado, ≤ 60 °C) e o **casco 100 %
+reparado** (senão desmontar e montar de novo seria um conserto de graça). Verifica o espaço de
+todos os blocos antes de mexer em qualquer um; sem espaço, recusa. Os baús voltam como blocos
+com o conteúdo; o combustível e a fornalha voltam para o jogador; a água do tanque se perde.
+Agachar + chave continua recolhendo o landship como item (A2.1).
 
 Camada 0 (chão), vista de cima, frente para cima:
 
@@ -343,6 +351,9 @@ Camada 1 (sobre a camada 0):
 
 `T` Esteira Reforçada · `Ch` Chassi · `H` Leme (sua direção define a frente) ·
 `Cv` Caldeira a Vapor · `m` encaixe de módulo opcional (cama, baú, fornalha) · `Cf` Compactador.
+
+Limites do gabarito: até 4 baús, 1 cama e 1 fornalha (como em A6). Os blocos de peça também
+servem sozinhos: o Baú de Carga como bloco funciona como um baú comum de 27 espaços.
 
 ## A9. Ideias futuras (fora do escopo das 3 fases)
 
@@ -477,10 +488,12 @@ Roda no servidor; para cada bloco: `level.mayInteract(piloto, pos)` + evento
 
 ### B3.7 Fase 3 — gabarito
 
-Blocos próprios (chassi, leme com `FACING`, esteira, caldeira, módulos como blocos).
-`AssemblyValidator` checa o gabarito a partir do leme (rotacionado pela direção dele),
-coleta módulos + inventários, remove os blocos e cria a entidade num único tick do servidor.
-Desmontagem: verifica espaço livre para todos os blocos antes de mexer em qualquer um.
+Blocos próprios (chassi, leme com `FACING`, esteira, caldeira, módulos como blocos; o baú com
+`BlockEntity` de 27 espaços). Os itens que já existiam viraram `BlockItem` com o mesmo id e o
+mesmo nome. `assembly/LandshipAssembly` checa o gabarito a partir do leme (rotacionado pela
+direção dele), tira o conteúdo dos baús antes de remover os blocos (senão ele cairia no chão),
+remove os blocos e cria a entidade num único tick do servidor. Desmontagem: verifica espaço
+livre para todos os blocos antes de mexer em qualquer um.
 
 ### B3.8 Recursos
 
@@ -620,6 +633,26 @@ Decisões e detalhes:
 
 Testes: 14 JUnit, 25 GameTests de servidor (8 dos módulos) e 2 GameTests de cliente (o segundo
 instala todos os módulos, fotografa as abas, dorme até de manhã e renasce ao lado do landship).
+
+### Fase 3 — montagem (implementada)
+
+| Parte da Parte A | Onde está |
+|---|---|
+| Blocos e receitas (A7) | `registry/ModBlocks`, `ModBlockEntities`, `assembly/LandshipHelmBlock`, `assembly/CargoModuleBlock` |
+| Gabarito, montar, desmontar (A8) | `assembly/LandshipAssembly` (`Layout`, `scan`, `assemble`, `disassemble`) |
+| Botão Desmontar | `LandshipMenu.BUTTON_DISASSEMBLE` / aba Módulos da `LandshipScreen` |
+
+Decisões e detalhes:
+
+- **Desmontar pelo painel** e não pela chave: Shift + chave já recolhe o landship como item, e
+  as duas coisas continuam existindo.
+- **Leme:** o modelo usa a base `orientable` girada 180°: o volante fica virado para quem está
+  atrás do leme (o piloto) e a seta no topo aponta para a frente do landship.
+- **Texturas dos blocos:** geradas por `design/textures/gen_block_textures.py`.
+
+Testes: 14 JUnit, 34 GameTests de servidor (9 da montagem: as 4 direções, módulos e baús,
+gabarito incompleto, baús demais, ida e volta, desmontagem recusada) e 3 GameTests de cliente
+(o terceiro monta com um clique real da chave no leme e desmonta pelo painel).
 
 ## B4. Plano de entregas
 
