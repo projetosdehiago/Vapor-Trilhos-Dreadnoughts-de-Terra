@@ -680,6 +680,8 @@ Decisões e detalhes:
 - **Leme:** o modelo usa a base `orientable` girada 180°: o volante fica virado para quem está
   atrás do leme (o piloto) e a seta no topo aponta para a frente do landship.
 - **Texturas dos blocos:** geradas por `design/textures/gen_block_textures.py`.
+- **Texturas dos itens:** 32×32, geradas por `design/textures/gen_item_textures.py` com o kit
+  `pixelkit.py`; as mesmas imagens vão para o pacote de recursos do Bedrock.
 
 Testes: 14 JUnit, 34 GameTests de servidor (9 da montagem: as 4 direções, módulos e baús,
 gabarito incompleto, baús demais, ida e volta, desmontagem recusada) e 4 GameTests de cliente

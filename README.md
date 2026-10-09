@@ -135,8 +135,10 @@ python3 design/model/build_preview.py preview.html    # visualizador 3D no naveg
 ```
 
 O gerador falha se duas faces ficarem sobrepostas no mesmo plano (isso cintila no jogo).
-As texturas dos itens e dos blocos também são geradas por código:
+As texturas dos itens (32×32) e dos blocos também são geradas por código:
 `python3 design/textures/gen_item_textures.py` e `python3 design/textures/gen_block_textures.py`.
+Os itens usam o kit de `design/textures/pixelkit.py` (formas sombreadas com luz de cima à
+esquerda e contorno colorido) mais detalhes colocados à mão.
 Os sons dos apitos também: `python3 design/audio/gen_whistles.py` (precisa de numpy e ffmpeg).
 
 ## Desenvolvimento
