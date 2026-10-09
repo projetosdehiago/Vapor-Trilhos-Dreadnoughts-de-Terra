@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "P": "#minecraft:planks",
+    "I": "minecraft:iron_ingot"
+  },
+  "pattern": [
+    "PIP",
+    "IPI",
+    "PIP"
+  ],
+  "result": {
+    "id": "vapor_trilhos:landship_chassis",
+    "count": 4
+  }
+}

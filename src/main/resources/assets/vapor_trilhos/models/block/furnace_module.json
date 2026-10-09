@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/cube_column",
+  "textures": {
+    "end": "vapor_trilhos:block/furnace_module_top",
+    "side": "vapor_trilhos:block/furnace_module_side"
+  }
+}

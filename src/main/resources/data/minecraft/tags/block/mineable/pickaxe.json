@@ -1,0 +1,9 @@
+{
+  "values": [
+    "vapor_trilhos:reinforced_track",
+    "vapor_trilhos:steam_boiler",
+    "vapor_trilhos:landship_chassis",
+    "vapor_trilhos:furnace_module",
+    "vapor_trilhos:compactor_module"
+  ]
+}

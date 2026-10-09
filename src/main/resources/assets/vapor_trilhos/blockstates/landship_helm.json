@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "vapor_trilhos:block/landship_helm",
+      "y": 180
+    },
+    "facing=east": {
+      "model": "vapor_trilhos:block/landship_helm",
+      "y": 270
+    },
+    "facing=south": {
+      "model": "vapor_trilhos:block/landship_helm"
+    },
+    "facing=west": {
+      "model": "vapor_trilhos:block/landship_helm",
+      "y": 90
+    }
+  }
+}

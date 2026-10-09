@@ -269,6 +269,11 @@ public class LandshipEntity extends VehicleEntity implements HasCustomInventoryS
 		entityData.set(DATA_MODULES, modules.encode());
 	}
 
+	/** Depois de mexer em {@link #modules()} por fora (montagem): avisa os clientes. */
+	public void refreshModules() {
+		syncModules();
+	}
+
 	private void syncBoiler() {
 		// valores arredondados: evitam reenviar o estado a cada tick por mudanças invisíveis
 		entityData.set(DATA_WATER, (float) Math.round(boiler.waterMb));

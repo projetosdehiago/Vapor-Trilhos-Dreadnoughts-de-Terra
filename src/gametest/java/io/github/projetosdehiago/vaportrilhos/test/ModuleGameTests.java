@@ -12,6 +12,8 @@ import io.github.projetosdehiago.vaportrilhos.registry.ModAttachments;
 import io.github.projetosdehiago.vaportrilhos.registry.ModEntities;
 import io.github.projetosdehiago.vaportrilhos.registry.ModItems;
 import net.fabricmc.fabric.api.entity.event.v1.EntitySleepEvents;
+import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents;
+import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents;
 import net.fabricmc.fabric.api.gametest.v1.GameTest;
 import net.fabricmc.fabric.api.util.EventResult;
 import net.minecraft.core.BlockPos;
@@ -25,6 +27,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.storage.LevelData;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
@@ -267,6 +270,32 @@ public class ModuleGameTests {
 				.thenExecute(() -> {
 					helper.assertTrue(LandshipBed.findRespawn(player) == null, "sem o landship o lar não vale mais");
 					helper.assertTrue(!player.hasAttached(ModAttachments.HOME), "e é apagado");
+				})
+				.thenSucceed();
+	}
+
+	@GameTest(maxTicks = 40)
+	public void deathUsesTheLandshipAsRespawnPointThenRestoresTheOldOne(GameTestHelper helper) {
+		LandshipEntity landship = setUp(helper);
+		ServerPlayer player = (ServerPlayer) helper.makeMockServerPlayer(GameType.SURVIVAL);
+		ServerPlayer.RespawnConfig bedAtHome = new ServerPlayer.RespawnConfig(
+				LevelData.RespawnData.of(helper.getLevel().dimension(), helper.absolutePos(new BlockPos(1, 1, 1)), 0f, 0f), false);
+		player.setRespawnPosition(bedAtHome, false);
+		helper.startSequence()
+				.thenIdle(5)
+				.thenExecute(() -> {
+					install(helper, landship, ModItems.BED_MODULE);
+					LandshipBed.recordHome(player, landship);
+					ServerLivingEntityEvents.AFTER_DEATH.invoker().afterDeath(player, helper.getLevel().damageSources().generic());
+					ServerPlayer.RespawnConfig onDeath = player.getRespawnConfig();
+					helper.assertTrue(onDeath != null && onDeath.forced(), "na morte, o lar vira o ponto de renascimento forçado");
+					helper.assertTrue(Vec3.atBottomCenterOf(onDeath.respawnData().pos()).distanceTo(landship.position()) < 4.0,
+							"o ponto fica ao lado do landship, não em " + onDeath.respawnData().pos());
+
+					ServerPlayer respawned = (ServerPlayer) helper.makeMockServerPlayer(GameType.SURVIVAL);
+					respawned.setRespawnPosition(onDeath, false);
+					ServerPlayerEvents.AFTER_RESPAWN.invoker().afterRespawn(player, respawned, false);
+					helper.assertValueEqual(respawned.getRespawnConfig(), bedAtHome, "depois de renascer, o ponto normal volta");
 				})
 				.thenSucceed();
 	}

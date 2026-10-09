@@ -5,9 +5,9 @@ veículos terrestres pesados — *landships* — sobre esteiras de madeira refor
 movidos por uma caldeira a vapor. É como os barcos grandes do jogo, mas para terra, e
 personalizável com módulos (cama, baús de carga, fornalha de alta temperatura e compactador).
 
-> **Status:** em desenvolvimento. Fase 1 (núcleo) e Fase 2 (módulos) prontas: o landship anda,
-> a caldeira funciona, solta vapor e se desgasta, e recebe cama, baús, fornalha e compactador.
-> A montagem com blocos (Fase 3) vem depois.
+> **Status:** as 3 fases estão prontas: o landship anda, a caldeira funciona, solta vapor e se
+> desgasta (Fase 1), recebe cama, baús, fornalha e compactador (Fase 2) e pode ser montado e
+> desmontado a partir de blocos (Fase 3).
 > O plano completo, as regras de jogo e os valores de balanceamento estão em
 > [`design/design.md`](design/design.md).
 
@@ -60,6 +60,31 @@ módulo instalado e devolve o conteúdo dele; sem módulos, a chave recolhe o ve
 
 Se o landship for destruído, os módulos e o conteúdo dos baús e da fornalha caem no chão.
 
+## Montar com blocos (Fase 3)
+
+Em vez de fabricar o item Landship, dá para montá-lo no mundo. Coloque os blocos assim (vista de
+cima; a frente é para onde você olhava ao colocar o **Leme de Controle**):
+
+```
+camada de baixo (no chão)          camada de cima
+          [Compactador]            (compactador opcional, 1 bloco à frente)
+[Esteira] [Chassi]  [Esteira]      [módulo] [Leme]    [módulo]
+[Esteira] [Chassi]  [Esteira]      [módulo] [ vazio ] [módulo]
+[Esteira] [Chassi]  [Esteira]      [módulo] [Caldeira][módulo]
+```
+
+Os módulos (cama, baú, fornalha) são opcionais. Clique com a **Chave de Caldeireiro** no Leme:
+se estiver tudo certo, os blocos viram o landship, com os módulos e o conteúdo dos baús. Se
+faltar algo, a mensagem diz o quê e sai fumaça dos blocos errados.
+
+Para **desmontar**: painel → aba **Módulos** → **Desmontar em blocos**. Precisa estar parado,
+sem ninguém a bordo, com a caldeira fria e o casco 100 % reparado. O combustível e a fornalha
+voltam para você; a água do tanque se perde.
+
+Receitas novas: **Chassi de Landship** (`PIP` / `IPI` / `PIP`, dá 4) e **Leme de Controle**
+(`SXS` / `PIP`, X = bússola). A Esteira, a Caldeira e os módulos também podem ser colocados
+como blocos; o Baú de Carga como bloco funciona como um baú comum.
+
 ## Requisitos
 
 | Componente | Versão |
@@ -105,6 +130,8 @@ python3 design/model/build_preview.py preview.html    # visualizador 3D no naveg
 ```
 
 O gerador falha se duas faces ficarem sobrepostas no mesmo plano (isso cintila no jogo).
+As texturas dos itens e dos blocos também são geradas por código:
+`python3 design/textures/gen_item_textures.py` e `python3 design/textures/gen_block_textures.py`.
 
 ## Desenvolvimento
 
@@ -118,7 +145,7 @@ O gerador falha se duas faces ficarem sobrepostas no mesmo plano (isso cintila n
 
 ```bash
 ./gradlew test               # caldeira (JUnit)
-./gradlew runGameTest        # servidor: caldeira, direção, plataforma, módulos, cama...
+./gradlew runGameTest        # servidor: caldeira, direção, plataforma, módulos, cama, montagem...
 ./gradlew runClientGameTest  # cliente: pilota, usa os módulos, dorme, renasce e tira prints (build/run/clientGameTest/screenshots)
 ```
 

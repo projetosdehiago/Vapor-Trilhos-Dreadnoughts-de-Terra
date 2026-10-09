@@ -20,6 +20,8 @@ public final class ModCreativeTab {
 						output.accept(ModItems.LANDSHIP);
 						output.accept(ModItems.STEAM_BOILER);
 						output.accept(ModItems.REINFORCED_TRACK);
+						output.accept(ModItems.LANDSHIP_CHASSIS);
+						output.accept(ModItems.LANDSHIP_HELM);
 						output.accept(ModItems.BOILERMAKER_WRENCH);
 						output.accept(ModItems.REPAIR_KIT);
 						output.accept(ModItems.BED_MODULE);
