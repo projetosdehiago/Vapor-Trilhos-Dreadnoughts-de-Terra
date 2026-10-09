@@ -65,6 +65,11 @@ for (const [key, value] of langs.pt_BR) {
   const count = (v) => (v.match(/%s/g) ?? []).length;
   if (count(value) !== count(langs.en_US.get(key) ?? "")) fail(`número de %s diferente entre as línguas: ${key}`);
 }
+for (const dir of [BP, RP]) {
+  for (const code of JSON.parse(readFileSync(join(dir, "texts/languages.json"), "utf8"))) {
+    if (!existsSync(join(dir, `texts/${code}.lang`))) fail(`idioma ${code} listado sem arquivo em ${dir}`);
+  }
+}
 const used = new Set(source.match(/"vapor_trilhos\.[a-z_.]+"/g)?.map((s) => s.slice(1, -1)) ?? []);
 for (const key of used) if (!langs.pt_BR.has(key)) fail(`texto usado no código e sem tradução: ${key}`);
 for (const prefix of ["damper", "whistle"]) {

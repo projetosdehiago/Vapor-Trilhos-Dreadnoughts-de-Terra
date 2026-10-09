@@ -46,6 +46,11 @@ for (const [from, to] of shared) {
   mkdirSync(dirname(join(RP, to)), { recursive: true });
   cpSync(join(REPO, from), join(RP, to));
 }
+// português de Portugal usa o texto do Brasil e o inglês britânico o americano (um arquivo por língua)
+for (const dir of [BP, RP]) {
+  cpSync(join(dir, "texts/pt_BR.lang"), join(dir, "texts/pt_PT.lang"));
+  cpSync(join(dir, "texts/en_US.lang"), join(dir, "texts/en_GB.lang"));
+}
 cpSync(join(JAVA_ASSETS, "icon.png"), join(RP, "pack_icon.png"));
 cpSync(join(JAVA_ASSETS, "icon.png"), join(BP, "pack_icon.png"));
 

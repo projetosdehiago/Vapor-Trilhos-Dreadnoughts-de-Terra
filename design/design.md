@@ -732,6 +732,7 @@ Estrutura de `bedrock/`:
 
 Recursos compartilhados com o Java (copiados pelo build, nunca duplicados no repositório):
 modelo e animações de `design/model/`, texturas dos itens e sons dos apitos dos assets do mod.
+Idiomas: `pt_BR` e `en_US`; o build copia o primeiro como `pt_PT` e o segundo como `en_GB`.
 
 ## C2. Adaptações por limite da plataforma
 
