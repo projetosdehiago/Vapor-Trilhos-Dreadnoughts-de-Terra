@@ -312,8 +312,10 @@ public class ModuleGameTests {
 		helper.assertValueEqual(landship.getWhistle(), WhistleSound.STEAM, "o padrão é o apito a vapor");
 		landship.selectWhistle(player, WhistleSound.CUSTOM);
 		helper.assertValueEqual(landship.getWhistle(), WhistleSound.CUSTOM, "a escolha fica no landship");
-		helper.assertTrue(LandshipEntity.class.getResource("/assets/vapor_trilhos/sounds/whistle/gemidao.ogg") != null,
-				"o áudio personalizado vem dentro do mod");
+		for (String file : new String[] {"steam", "foghorn", "bell", "war_horn", "gemidao"}) {
+			helper.assertTrue(LandshipEntity.class.getResource("/assets/vapor_trilhos/sounds/whistle/" + file + ".ogg") != null,
+					"o áudio " + file + ".ogg vem dentro do mod");
+		}
 
 		TagValueOutput output = TagValueOutput.createWithContext(ProblemReporter.DISCARDING, helper.getLevel().registryAccess());
 		landship.saveWithoutId(output);

@@ -640,11 +640,21 @@ instala todos os módulos, fotografa as abas, dorme até de manhã e renasce ao 
 ### Apito com escolha de som
 
 `landship/WhistleSound` lista as 5 opções; a escolhida fica num dado sincronizado da entidade e é
-salva com ela. Os 4 primeiros sons são áudios do jogo base (`sounds.json`); o personalizado é o
-único áudio do mod: `assets/vapor_trilhos/sounds/whistle/gemidao.ogg`, convertido do MP3 enviado
-pelo usuário para OGG Vorbis **mono** (`ffmpeg -i entrada.mp3 -ac 1 -ar 44100 -c:a libvorbis -q:a 4
-gemidao.ogg`), porque o jogo só diminui com a distância os sons mono. A recarga de cada opção
-acompanha a duração do som (o personalizado tem 7 s).
+salva com ela. Os 4 primeiros sons são **originais, sintetizados por código** em
+`design/audio/gen_whistles.py` (numpy + ffmpeg; síntese aditiva, ruído filtrado e reverberação
+de Schroeder), então não há licença de terceiros a respeitar:
+
+| Som | Como é feito |
+|---|---|
+| Apito a vapor | 3 tubos em acorde de fá# menor, com a "subida" de tom ao abrir e o chiado do vapor |
+| Buzina de nevoeiro | tom grave (104 Hz) e áspero que termina num "grunhido" descendo |
+| Sino de navio | duas batidas, parciais desafinados de sino e decaimento longo |
+| Corneta de guerra | chamada de duas notas (sol, ré) com brilho de metal no ataque e vibrato |
+
+O personalizado (`gemidao.ogg`) é o áudio enviado pelo usuário, convertido para OGG Vorbis
+(`ffmpeg -i entrada.mp3 -ac 1 -ar 44100 -c:a libvorbis -q:a 4 gemidao.ogg`). Todos são **mono**:
+o jogo só diminui com a distância os sons mono. A recarga de cada opção acompanha a duração do
+som (o personalizado tem 7 s).
 
 ### Fase 3 — montagem (implementada)
 
